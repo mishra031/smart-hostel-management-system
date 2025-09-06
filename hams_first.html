@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Management - Login</title>
+    <link rel="stylesheet" href="hams.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="invertis_logo.png" alt="Logo">
+        </div>
+        <div class="title">
+            <h1>HOSTEL MANAGEMENT</h1>
+            <p>Attendance & Information System</p>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Role Selection -->
+
+
+        <!-- Login Box -->
+        <form>
+            <div class="login-box">
+
+                <label for="userid">Identity Document</label>
+                <input type="text" id="userid" placeholder="Enter your ID">
+
+
+                <label for="password">Password</label>
+                <div style="position: relative;">
+                    <input type="password" id="password" placeholder="Enter Password" required>
+                    <i class="fa-solid fa-eye" id="togglePassword"
+                        style="position:absolute; right:10px; top:38%; transform:translateY(-50%); cursor:pointer;"></i>
+                </div>
+
+
+
+
+                <a href="#" id="loginBtn" class="btn">LOGIN </a>
+
+
+                <a href="forget_pass_page.html" class="forgot" >Forgot Password?</a>
+                <div class="createacc">
+                    <span style="color: white;">Don’t have an account?</span> <a href="#" class=" create_accound"> Create Account </a>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+
+    <script src="hams.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Profile Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        .poppins {
+            font-family: "Poppins", sans-serif;
+        }
+
+        .glass-dark {
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            /* background: url("campus-facilities.jpg") no-repeat center center fixed; */
+            background-color: white;
+            background-size: cover;
+            position: relative;
+            z-index: 0;
+        }
+
+        /* Dark overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgb(255, 255, 255);
+            z-index: -1;
+        }
+
+        .btn-3d {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .option-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        #profile_bg {
+            background-color: transparent;
+            box-shadow: 2px -1px 7px rgb(0, 0, 0);
+        }
+
+        #profile_background {
+            background-color: transparent;
+            opacity: 0.9;
+            box-shadow: 2px -1px 7px rgb(0, 0, 0);
+        }
+
+        #logo_image {
+            margin-left: -109px;
+        }
+
+        /* Make all text black */
+        body,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        label,
+        input,
+        textarea,
+        select,
+        span {
+            color: black !important;
+        }
+
+        #student_dash {
+            color: white;
+        }
+
+        #leave_request {
+            border-radius: 1px solid black;
+            background-color: transparent;
+            box-shadow: 0px 1px 10px rgb(0, 0, 0);
+        }
+
+        #navigation_link {
+            margin-right: -95px;
+        }
+
+        #attendance_dashboard {
+            border-radius: 1px solid black;
+            background-color: transparent;
+            box-shadow: 0px 1px 10px rgb(0, 0, 0);
+            width: 1475px;
+        }
+
+        #leaveReason {
+            height: 187px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-700 min-h-screen poppins">
+    <!-- Header -->
+    <!-- Header -->
+    <!-- Navbar -->
+    <!-- Navbar -->
+    <nav class="bg-purple-700 shadow-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo + Title -->
+                <div id="logo_image" class="flex items-center space-x-3">
+                    <!-- Logo (icon or image) -->
+                    <div
+                        class="bg-white text-purple-700 font-bold rounded-full w-10 h-10 flex items-center justify-center">
+                        <span class="text-lg">🎓</span>
+                    </div>
+                    <!-- Title -->
+                    <h1 id="student_dash" class="text-2xl font-bold text-white !important">
+                        Student Dashboard
+                    </h1>
+                </div>
+
+                <!-- Navigation Links -->
+                <div id="navigation_link" class="hidden md:flex space-x-6">
+                    <a href="qr_code_genertor_HAMS.HTML" class="text-white hover:text-gray-200 font-medium">QR
+                        Generate</a>
+
+                    <a href="hams_first.html" class="text-white hover:text-gray-200 font-medium">Logout</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-white focus:outline-none text-2xl">☰</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <!-- Profile Section -->
+        <div class="glass-dark rounded-xl p-6 mb-6" id="profile_bg">
+            <h2 class="text-2xl font-bold text-white mb-6">Profile Information</h2>
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                <!-- Profile Picture -->
+                <div class="text-center">
+                    <div class="relative">
+                        <img id="profilePic"
+                            src="https://www.freeiconspng.com/uploads/am-a-19-year-old-multimedia-artist-student-from-manila--21.png"
+                            alt="Profile Picture" class="profile-pic rounded-full border-4" />
+                        <input type="file" id="fileInput" accept="image/*" class="hidden"
+                            onchange="handleImageUpload(event)" />
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="mt-4 space-x-2">
+                        <!-- Upload always visible -->
+                        <button onclick="document.getElementById('fileInput').click()"
+                            class="btn-3d bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">
+                            Upload
+                        </button>
+
+                        <!-- View & Remove initially hidden -->
+                        <button id="viewBtn" onclick="viewProfilePic()"
+                            class="btn-3d bg-green-600 text-white px-3 py-2 rounded-lg text-sm hidden">
+                            View
+                        </button>
+                        <button id="removeBtn" onclick="removeProfilePic()"
+                            class="btn-3d bg-red-600 text-white px-3 py-2 rounded-lg text-sm hidden">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Profile Details -->
+
+                <div class="flex-1 text-white">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Full Name</label>
+                            <input type="text" id="fullName" placeholder="Enter your name"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                required />
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Student ID</label>
+                            <input type="text" id="studentId" placeholder="Enter Student ID"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                required />
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Email</label>
+                            <input type="email" id="email" placeholder="Enter your email"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                required />
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Phone</label>
+                            <input type="text" id="phone" placeholder="Enter your mobile number"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                maxlength="10" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Room Number</label>
+                            <input type="text" id="roomNumber" placeholder="Enter your room number"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                required />
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Course</label>
+                            <input type="text" id="course" placeholder="Enter your course"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                required />
+                        </div>
+
+                        <!-- Hostel Name -->
+                        <!-- Hostel Name -->
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Hostel Name</label>
+                            <select id="hostelName"
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                required>
+                                <option value="">Select Specific Hostel</option>
+                                <option>Himgiri Hostel</option>
+                                <option>Nilgiri Hostel</option>
+                                <option>Aravali 1 Hostel</option>
+                                <option>Aravali 2 Hostel</option>
+                                <option>Shivalik Hostel</option>
+                                <option>Himalaya Hostel</option>
+                                <option>Bhagirathi Hostel</option>
+                                <option>Narmada Hostel</option>
+                                <option>Godavari Hostel</option>
+                                <option>Kaveri Hostel</option>
+                            </select>
+                        </div>
+
+                        <!-- Warden Name (readonly text) -->
+                        <div>
+                            <label class="block text-gray-200 text-sm mb-1">Warden Name</label>
+                            <input type="text" id="wardenName" readonly
+                                class="w-full p-3 rounded-lg bg-transparent border border-gray-500 text-white placeholder-gray-500 shadow-md"
+                                placeholder="Auto-filled warden name" />
+                        </div>
+
+                    </div>
+                    <!-- Save & Clear Buttons -->
+                    <div class="mt-4 space-x-2">
+                        <button onclick="saveProfile()"
+                            class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-6 py-3 rounded-lg mt-4 shadow-md">
+                            Save Profile
+                        </button>
+
+
+
+
+                        <button onclick="clearProfile()"
+                            class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-6 py-3 rounded-lg mt-4 shadow-md">
+                            Clear Data
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <!-- Attendance Options -->
+            <div id="profile_background" class="glass-dark rounded-xl p-6 text-center card-hover">
+                <div class="text-3xl mb-3 float"></div>
+                <h3 class="text-white font-semibold mb-2">Attendance Options</h3>
+                <button onclick="showAttendanceOptions()"
+                    class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-4 py-2 rounded-lg text-sm">
+                    View Options
+                </button>
+            </div>
+
+            <!-- Laundry -->
+            <div id="profile_background" class="glass-dark rounded-xl p-6 text-center card-hover">
+                <h3 class="text-white font-semibold mb-2">Laundry Service</h3>
+                <button onclick="showLaundryDetails()"
+                    class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-4 py-2 rounded-lg text-sm">
+                    View Details
+                </button>
+            </div>
+
+            <!-- Mess Timings -->
+            <div id="profile_background" class="glass-dark rounded-xl p-6 text-center card-hover">
+                <h3 class="text-white font-semibold mb-2">Mess Timings</h3>
+                <button onclick="showMessTimings()"
+                    class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-4 py-2 rounded-lg text-sm">
+                    View Timings
+                </button>
+            </div>
+
+            <!-- Hostel Rules -->
+            <div id="profile_background" class="glass-dark rounded-xl p-6 text-center card-hover">
+                <h3 class="text-white font-semibold mb-2">Hostel Rules</h3>
+                <button onclick="showHostelRules()"
+                    class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-4 py-2 rounded-lg text-sm">
+                    View Rules
+                </button>
+            </div>
+        </div>
+
+        <!-- Leave Request & Attendance Dashboard -->
+        <!-- Leave request -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+            <script>
+                (function () {
+                    emailjs.init("wdUsgDNr_HxKyu0sq");
+                })();
+
+                function sendMail(event) {
+                    event.preventDefault();
+
+                    let params = {
+                        name: document.getElementById("from_name").value,
+                        leaveType: document.getElementById("leaveType").value,
+                        fromDate: document.getElementById("fromDate").value,
+                        toDate: document.getElementById("toDate").value,
+                        reason: document.getElementById("reason").value,
+                        email: "deependrasoni108@gmail.com", // HOD Email
+                    };
+
+                    emailjs.send("service_1jk2zaf", "template_flj3w8e", params).then(
+                        function (response) {
+                            alert(" Leave request email sent successfully to HOD!");
+                        },
+                        function (error) {
+                            alert("Failed to send email: " + JSON.stringify(error));
+                        }
+                    );
+                }
+            </script>
+
+            <!-- EmailJS CDN -->
+            <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+            <script>
+                (function () {
+                    // Initialize EmailJS with your Public Key
+                    emailjs.init("wdUsgDNr_HxKyu0sq");
+                })();
+
+                function sendMail(event) {
+                    event.preventDefault();
+
+                    let params = {
+                        name: document.getElementById("from_name").value,
+                        studentid: document.getElementById("studentid").value,
+                        course: document.getElementById("course").value,
+                        courseYear: document.getElementById("courseYear").value,
+                        contactNumber: document.getElementById("contactNumber").value,
+                        leaveType: document.getElementById("leaveType").value,
+                        fromDate: document.getElementById("fromDate").value,
+                        toDate: document.getElementById("toDate").value,
+                        reason: document.getElementById("reason").value,
+                        email: "temepass1@gmail.com", // HOD Fixed Email
+                    };
+
+                    emailjs.send("service_1jk2zaf", "template_flj3w8e", params).then(
+                        function (response) {
+                            alert("✅ Leave request email sent successfully to HOD!");
+                        },
+                        function (error) {
+                            alert("❌ Failed to send email: " + JSON.stringify(error));
+                        }
+                    );
+                }
+            </script>
+
+            <!-- Leave Request -->
+            <div id="leave_request" class="glass-dark rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">Leave Request</h3>
+                <form onsubmit="sendMail(event)" class="space-y-4">
+                    <!-- Name -->
+                    <!-- 3 inputs in one row -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- Name -->
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Your Name</label>
+                            <input type="text" id="from_name" class="w-full p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid black; background: transparent; color: white; box-shadow: 0 4px 10px black;"
+                                placeholder="Enter your name" required />
+                        </div>
+
+                        <!-- Student ID -->
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Student ID</label>
+                            <input type="text" id="studentid" class="w-full p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid black; background: transparent; color: white; box-shadow: 0 4px 10px black;"
+                                placeholder="Enter your Student ID" required />
+                        </div>
+
+                        <!-- Course -->
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Course</label>
+                            <input type="text" id="course" class="w-full p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid black; background: transparent; color: white; box-shadow: 0 4px 10px black;"
+                                placeholder="e.g. BCA, B.Tech" required />
+                        </div>
+                    </div>
+
+
+                    <!-- Course & Year -->
+                    <!-- Year, Contact Number, Leave Type in one row -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- Year -->
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Year</label>
+                            <select id="year_" class="w-full p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid black; background: transparent; color: white; box-shadow: 0 4px 10px black;"
+                                required>
+                                <option value="">Select your year</option>
+                                <option>First Year</option>
+                                <option>Second Year</option>
+                                <option>Third Year</option>
+                                <option>Fourth Year</option>
+                                <option>Fifth Year</option>
+                            </select>
+                        </div>
+
+                        <!-- Contact Number -->
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Contact No.</label>
+                            <input type="tel" id="contactNumber" maxlength="10" class="w-full p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid black; background: transparent; color: white; box-shadow: 0 4px 10px black;"
+                                placeholder="Enter contact number" required />
+                        </div>
+
+                        <!-- Leave Type -->
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Leave Type</label>
+                            <select id="leaveType" class="w-full p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid black; background: transparent; color: white; box-shadow: 0 4px 10px black;"
+                                required>
+                                <option value="">Select leave type</option>
+                                <option>Sick Leave</option>
+                                <option>Casual Leave</option>
+                                <option>Medical Leave</option>
+                                <option>Emergency Leave</option>
+                                <option>Academic Leave</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <!-- Dates -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">From Date</label>
+                            <input type="date" id="fromDate" class="w-full p-3 rounded-lg" style="
+                    opacity: 0.4;
+                    border: 1.5px solid black;
+                    background: transparent;
+                    color: white;
+                    box-shadow: 0 4px 10px black;
+                  " required />
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">To Date</label>
+                            <input type="date" id="toDate" class="w-full p-3 rounded-lg" style="
+                    opacity: 0.4;
+                    border: 1.5px solid black;
+                    background: transparent;
+                    color: white;
+                    box-shadow: 0 4px 10px black;
+                  " required />
+                        </div>
+                    </div>
+
+                    <!-- Reason -->
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1">Reason</label>
+                        <textarea id="reason" rows="3" class="w-full p-3 rounded-lg" style="
+                  opacity: 0.4;
+                  border: 1.5px solid black;
+                  background: transparent;
+                  color: white;
+                  box-shadow: 0 4px 10px black;
+                " placeholder="Enter reason for leave..." required></textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit"
+                        class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-4 py-2 rounded-lg w-full">
+                        📩 Submit to HOD
+                    </button>
+                </form>
+            </div>
+
+
+
+            <!-- Student Complaint -->
+            <div id="leave_request" class="glass-dark rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">Student Complaint</h3>
+                <div class="space-y-4">
+
+                    <!-- Name, Room No, Date in one line -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Name</label>
+                            <input type="text" placeholder="Enter Your Name" id="name_place"
+                                class="w-full text-white p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid #000; background-color:transparent; color: white; box-shadow: 0 4px 10px #000;">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Room No</label>
+                            <input type="text" placeholder="Room Number" id="Room_num"
+                                class="w-full text-white p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid #000; background-color:transparent; color: white; box-shadow: 0 4px 10px #000;">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-1">Date</label>
+                            <input type="date" id="fromDate" class="w-full text-white p-3 rounded-lg"
+                                style="opacity: 0.4; border: 1.5px solid #000; background-color:transparent; color: white; box-shadow: 0 4px 10px #000;">
+                        </div>
+                    </div>
+
+                    <!-- Complaint Type -->
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1">Complaint Type</label>
+                        <select id="leaveType" class="w-full text-white p-3 rounded-lg"
+                            style="opacity: 0.4; border: 1.5px solid #000; background-color:transparent; color: white; box-shadow: 0 4px 10px #000;">
+                            <option>Poor cleanliness of rooms, bathrooms, and common areas</option>
+                            <option>Irregular or inadequate water supply (hot/cold)</option>
+                            <option>Frequent power cuts and no proper backup</option>
+                            <option>Broken or insufficient furniture, fans, or lights</option>
+                            <option>Mosquitoes/insects due to poor maintenance</option>
+                            <option>Low quality and unhygienic food in the mess</option>
+                            <option>Repetitive and tasteless food menu</option>
+                            <option>Drinking water not clean or properly filtered</option>
+                            <option>Strict curfew timings causing inconvenience</option>
+                            <option>Too many restrictions on outings/visitors/deliveries</option>
+                            <option>Uncooperative or harsh hostel management/wardens</option>
+                            <option>Poor or no Wi-Fi/internet facilities</option>
+                            <option>Lack of laundry services or irregular collection</option>
+                            <option>Unhygienic or broken washroom facilities</option>
+                            <option>Insufficient sports or recreation facilities</option>
+                            <option>High hostel fees compared to facilities provided</option>
+                            <option>Hidden or extra charges for services</option>
+                            <option>Weak hostel security (CCTV, guards)</option>
+                            <option>Lack of proper fire safety measures</option>
+                        </select>
+                    </div>
+
+                    <!-- Reason -->
+                    <div>
+                        <label class="block text-gray-300 text-sm mb-1">Description</label>
+                        <textarea id="leaveReason" rows="3" class="w-full text-white p-3 rounded-lg"
+                            style="opacity: 0.4; border: 1.5px solid #000; background-color:transparent; color: white; box-shadow: 0 4px 10px #000;"
+                            placeholder="Enter reason for leave..."></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button onclick="submitLeaveRequest()"
+                        class="btn-3d bg-purple-600 hover:bg-purple-900 text-white px-4 py-2 rounded-lg w-full">
+                        Submit to DC/Warden
+                    </button>
+                </div>
+            </div>
+
+            <!-- Attendance Dashboard -->
+            <div id="attendance_dashboard" class="glass-dark rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">
+                    Attendance Dashboard
+                </h3>
+                <div class="space-y-4">
+                    <div class="bg-green-500/20 p-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-300 font-semibold">Total Attendance</span>
+                            <span class="text-white text-xl font-bold">85%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-500/20 p-3 rounded-lg text-center shadow-md">
+                            <div class="text-blue-800 text-sm font-semibold">
+                                Present Days
+                            </div>
+                            <div class="text-gray-900 text-xl font-bold">68</div>
+                        </div>
+                        <div class="bg-red-700/20 p-3 rounded-lg text-center shadow-md">
+                            <div class="text-red-800 text-sm font-semibold">
+                                Absent Days
+                            </div>
+                            <div class="text-gray-900 text-xl font-bold">12</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-500/20 p-3 rounded-lg text-center shadow-md">
+                        <div class="text-yellow-800 text-sm font-semibold">
+                            This Month
+                        </div>
+                        <div class="text-white-900 text-lg font-bold">22/25 Days</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Options Modal -->
+    <div id="attendanceModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+            <!-- Header -->
+            <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">
+                Attendance Options
+            </h3>
+
+            <div class="space-y-4">
+                <!-- QR Generator Option -->
+                <a href="qr_code_genertor_HAMS.HTML" class="block" id="qr_code_gen">
+                    <div
+                        class="option-card bg-blue-50 p-5 rounded-lg border border-blue-200 hover:shadow-md transition cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <div>
+                                <h4 class="text-blue-700 font-semibold text-lg">
+                                    QR Generator
+                                </h4>
+                                <p class="text-gray-600 text-sm">
+                                    Generate QR code for attendance
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="hideModal('attendanceModal')"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl mt-6 font-medium transition">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Laundry Details Modal -->
+    <div id="laundryModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+            <!-- Header -->
+            <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">
+                Laundry Service
+            </h3>
+
+            <!-- Info Cards -->
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-blue-600 font-semibold">Collection Days</h4>
+                    <p class="text-gray-700">Monday, Wednesday, Friday</p>
+                </div>
+                <div class="bg-indigo-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-indigo-600 font-semibold">Delivery Days</h4>
+                    <p class="text-gray-700">Tuesday, Thursday, Saturday</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-green-600 font-semibold">Timing</h4>
+                    <p class="text-gray-700">9:00 AM - 11:00 AM</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-yellow-600 font-semibold">Cost</h4>
+                    <p class="text-gray-700">₹50 per week</p>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="hideModal('laundryModal')"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl mt-6 font-medium transition">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Mess Timings Modal -->
+    <div id="messModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+            <!-- Header -->
+            <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">
+                Mess Timings
+            </h3>
+
+            <!-- Info Cards -->
+            <div class="space-y-4">
+                <div class="bg-green-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-green-600 font-semibold">Breakfast</h4>
+                    <p class="text-gray-700">7:00 AM - 9:30 AM</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-blue-600 font-semibold">Lunch</h4>
+                    <p class="text-gray-700">12:00 PM - 2:30 PM</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-orange-600 font-semibold">Snacks</h4>
+                    <p class="text-gray-700">4:00 PM - 6:00 PM</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg shadow-sm">
+                    <h4 class="text-purple-600 font-semibold">Dinner</h4>
+                    <p class="text-gray-700">7:30 PM - 10:00 PM</p>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="hideModal('messModal')"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl mt-6 font-medium transition">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Hostel Rules Modal -->
+    <div id="rulesModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+            <!-- Header -->
+            <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">
+                Hostel Rules
+            </h3>
+
+            <!-- Scrollable Rules List -->
+            <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                <div class="bg-red-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">No visitors after 9:00 PM</p>
+                </div>
+                <div class="bg-yellow-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">Maintain silence after 10:00 PM</p>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">
+                        Keep rooms and common areas clean
+                    </p>
+                </div>
+                <div class="bg-green-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">
+                        Inform warden before leaving hostel
+                    </p>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">
+                        No loud music or phone calls in corridors
+                    </p>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">
+                        No alcohol or smoking in premises
+                    </p>
+                </div>
+                <div class="bg-cyan-50 p-3 rounded-lg shadow-sm">
+                    <p class="text-gray-700 text-sm">
+                        Report electrical issues immediately
+                    </p>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="hideModal('rulesModal')"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl mt-6 font-medium transition">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Picture View Modal -->
+    <div id="profileViewModal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 px-4">
+        <div class="modal-content glass-dark rounded-2xl p-6 w-full max-w-md text-center">
+            <h3 class="text-xl font-bold text-white mb-4">Profile Picture</h3>
+            <img id="profileViewImage" src="" alt="Profile Picture"
+                class="w-64 h-64 object-cover rounded-full mx-auto border-4 border-blue-500" />
+            <button onclick="hideModal('profileViewModal')"
+                class="btn-3d bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl mt-6">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage"
+        class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <span id="successText"></span>
+    </div>
+
+    <script>
+        function saveProfile() {
+            const fullName = document.getElementById("fullName").value.trim();
+            const studentId = document.getElementById("studentId").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const roomNumber = document.getElementById("roomNumber").value.trim();
+            const course = document.getElementById("course").value.trim();
+
+            // Validation
+            if (
+                !fullName ||
+                !studentId ||
+                !email ||
+                !phone ||
+                !roomNumber ||
+                !course
+            ) {
+                showSuccess("⚠️ Please fill in all fields!", "error");
+                return;
+            }
+
+            // Email check
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showSuccess("⚠️ Enter a valid email address!", "error");
+                return;
+            }
+
+            // Phone check (10 digits)
+            if (!/^\d{10}$/.test(phone)) {
+                showSuccess("⚠️ Phone number must be 10 digits!", "error");
+                return;
+            }
+
+            // Student ID check (alphanumeric)
+            if (!/^[a-zA-Z0-9]+$/.test(studentId)) {
+                showSuccess("⚠️ Student ID must be alphanumeric!", "error");
+                return;
+            }
+
+            // If all good, save profile
+            const profileData = {
+                fullName,
+                studentId,
+                email,
+                phone,
+                roomNumber,
+                course,
+            };
+            localStorage.setItem("studentProfile", JSON.stringify(profileData));
+
+            showSuccess("✅ Profile saved successfully!");
+        }
+
+        // Profile Picture Functions
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById("profilePic").src = e.target.result;
+                    showSuccess("Profile picture uploaded successfully!");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function viewProfilePic() {
+            const profilePic = document.getElementById("profilePic").src;
+            document.getElementById("profileViewImage").src = profilePic;
+            showModal("profileViewModal");
+        }
+
+        function removeProfilePic() {
+            document.getElementById("profilePic").src =
+                "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Ccircle cx='75' cy='75' r='75' fill='%23374151'/%3E%3Ctext x='75' y='85' text-anchor='middle' fill='white' font-size='60'%3E👤%3C/text%3E%3C/svg%3E";
+            showSuccess("Profile picture removed!");
+        }
+
+        function saveProfile() {
+            showSuccess("Profile saved successfully!");
+        }
+
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove("hidden");
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add("hidden");
+        }
+
+        function showAttendanceOptions() {
+            showModal("attendanceModal");
+        }
+
+        function showLaundryDetails() {
+            showModal("laundryModal");
+        }
+
+        function showMessTimings() {
+            showModal("messModal");
+        }
+
+        function showHostelRules() {
+            showModal("rulesModal");
+        }
+
+        function selectAttendanceMethod(method) {
+            let methodName = "";
+            let emoji = "";
+
+            switch (method) {
+                case "face":
+                    methodName = "Face Verification";
+                    emoji = "📸";
+                    break;
+                case "qr":
+                    methodName = "QR Generator";
+                    emoji = "📱";
+                    break;
+                case "manual":
+                    methodName = "Manual Attendance";
+                    emoji = "";
+                    break;
+            }
+
+            hideModal("attendanceModal");
+            showSuccess(`${emoji} ${methodName} selected!`);
+        }
+
+        function submitLeaveRequest() {
+            const leaveType = document.getElementById("leaveType").value;
+            const fromDate = document.getElementById("fromDate").value;
+            const toDate = document.getElementById("toDate").value;
+            const reason = document.getElementById("leaveReason").value;
+
+            if (!fromDate || !toDate || !reason) {
+                showSuccess("Please fill all fields!", "error");
+                return;
+            }
+
+            showSuccess("Leave request submitted to HOD successfully!");
+
+            // Clear form
+            document.getElementById("fromDate").value = "";
+            document.getElementById("toDate").value = "";
+            document.getElementById("leaveReason").value = "";
+        }
+
+        function showSuccess(message, type = "success") {
+            const successMessage = document.getElementById("successMessage");
+            const successText = document.getElementById("successText");
+
+            successText.textContent = message;
+            successMessage.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === "error" ? "bg-red-500" : "bg-green-500"
+                } text-white`;
+            successMessage.classList.remove("hidden");
+
+            setTimeout(() => {
+                successMessage.classList.add("hidden");
+            }, 3000);
+        }
+
+        // profile_section
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById("profilePic").src = e.target.result;
+
+                    // Show View and Remove buttons
+                    document.getElementById("viewBtn").classList.remove("hidden");
+                    document.getElementById("removeBtn").classList.remove("hidden");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function viewProfilePic() {
+            const imgSrc = document.getElementById("profilePic").src;
+            window.open(imgSrc, "_blank"); // Opens image in new tab
+        }
+
+        function removeProfilePic() {
+            // Reset profile pic to default
+            document.getElementById("profilePic").src =
+                "https://www.freeiconspng.com/uploads/am-a-19-year-old-multimedia-artist-student-from-manila--21.png";
+
+            // Hide View and Remove again
+            document.getElementById("viewBtn").classList.add("hidden");
+            document.getElementById("removeBtn").classList.add("hidden");
+
+            // Reset input
+            document.getElementById("fileInput").value = "";
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener("click", function (e) {
+            if (e.target.classList.contains("modal-backdrop")) {
+                e.target.classList.add("hidden");
+            }
+        });
+    </script>
+    <script>
+        (function () {
+            function c() {
+                var b = a.contentDocument || a.contentWindow.document;
+                if (b) {
+                    var d = b.createElement("script");
+                    d.innerHTML =
+                        "window.__CF$cv$params={r:'9754320aa79854a2',t:'MTc1NjIyMDM5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                    b.getElementsByTagName("head")[0].appendChild(d);
+                }
+            }
+            if (document.body) {
+                var a = document.createElement("iframe");
+                a.height = 1;
+                a.width = 1;
+                a.style.position = "absolute";
+                a.style.top = 0;
+                a.style.left = 0;
+                a.style.border = "none";
+                a.style.visibility = "hidden";
+                document.body.appendChild(a);
+                if ("loading" !== document.readyState) c();
+                else if (window.addEventListener)
+                    document.addEventListener("DOMContentLoaded", c);
+                else {
+                    var e = document.onreadystatechange || function () { };
+                    document.onreadystatechange = function (b) {
+                        e(b);
+                        "loading" !== document.readyState &&
+                            ((document.onreadystatechange = e), c());
+                    };
+                }
+            }
+        })();
+
+
+
+
+        // ✅ Save Profile to Local Database (localStorage)
+        function saveProfile() {
+            const fullName = document.getElementById("fullName").value.trim();
+            const studentId = document.getElementById("studentId").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const roomNumber = document.getElementById("roomNumber").value.trim();
+            const course = document.getElementById("course").value.trim();
+            const hostelName = document.getElementById("hostelName").value.trim();
+            const wardenName = document.getElementById("wardenName").value.trim();
+
+            // Validation
+            if (!fullName || !studentId || !email || !phone || !roomNumber || !course || !hostelName || !wardenName) {
+                showSuccess("⚠️ Please fill in all fields!", "error");
+                return;
+            }
+
+            // Email check
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showSuccess("⚠️ Enter a valid email address!", "error");
+                return;
+            }
+
+            // Phone check (10 digits)
+            if (!/^\d{10}$/.test(phone)) {
+                showSuccess("⚠️ Phone number must be 10 digits!", "error");
+                return;
+            }
+
+            // Student ID check (alphanumeric)
+            if (!/^[a-zA-Z0-9]+$/.test(studentId)) {
+                showSuccess("⚠️ Student ID must be alphanumeric!", "error");
+                return;
+            }
+
+            // If all good, save profile
+            const profileData = {
+                fullName,
+                studentId,
+                email,
+                phone,
+                roomNumber,
+                course,
+                hostelName,
+                wardenName
+            };
+
+            localStorage.setItem("studentProfile", JSON.stringify(profileData));
+
+            showSuccess("✅ Profile saved successfully!");
+        }
+
+        // ✅ Load Profile Automatically when page loads
+        window.onload = function () {
+            const savedProfile = localStorage.getItem("studentProfile");
+
+            if (savedProfile) {
+                const profileData = JSON.parse(savedProfile);
+
+                document.getElementById("fullName").value = profileData.fullName || "";
+                document.getElementById("studentId").value = profileData.studentId || "";
+                document.getElementById("email").value = profileData.email || "";
+                document.getElementById("phone").value = profileData.phone || "";
+                document.getElementById("roomNumber").value = profileData.roomNumber || "";
+                document.getElementById("course").value = profileData.course || "";
+                document.getElementById("hostelName").value = profileData.hostelName || "";
+                document.getElementById("wardenName").value = profileData.wardenName || "";
+
+                // If you want to show profile data in dashboard labels (optional)
+                if (document.getElementById("profileNameDisplay")) {
+                    document.getElementById("profileNameDisplay").innerText = profileData.fullName;
+                }
+                if (document.getElementById("profileCourseDisplay")) {
+                    document.getElementById("profileCourseDisplay").innerText = profileData.course;
+                }
+                if (document.getElementById("profileHostelDisplay")) {
+                    document.getElementById("profileHostelDisplay").innerText = profileData.hostelName;
+                }
+                if (document.getElementById("profileWardenDisplay")) {
+                    document.getElementById("profileWardenDisplay").innerText = profileData.wardenName;
+                }
+            }
+        };
+
+        // ✅ Utility function to show success/error messages
+        function showSuccess(message, type = "success") {
+            const successMessage = document.getElementById("successMessage");
+            const successText = document.getElementById("successText");
+
+            successText.textContent = message;
+            successMessage.className =
+                `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === "error"
+                    ? "bg-red-500"
+                    : "bg-green-500"} text-white`;
+            successMessage.classList.remove("hidden");
+
+            setTimeout(() => {
+                successMessage.classList.add("hidden");
+            }, 3000);
+        }
+
+        // ✅ Clear Profile Data
+        function clearProfile() {
+            localStorage.removeItem("studentProfile");
+
+            document.getElementById("fullName").value = "";
+            document.getElementById("studentId").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("phone").value = "";
+            document.getElementById("roomNumber").value = "";
+            document.getElementById("course").value = "";
+            document.getElementById("hostelName").value = "";
+            document.getElementById("wardenName").value = "";
+
+            showSuccess("🗑️ Profile data cleared!");
+        }
+
+
+
+        // 🔄 Auto-fill same fields across all forms
+        function syncInputs(sourceId, targetIds) {
+            const source = document.getElementById(sourceId);
+            if (!source) return;
+
+            source.addEventListener("input", () => {
+                targetIds.forEach(id => {
+                    const target = document.getElementById(id);
+                    if (target) target.value = source.value;
+                });
+            });
+        }
+
+        // ✅ Link Profile inputs with Leave/Complaint inputs
+        document.addEventListener("DOMContentLoaded", () => {
+            syncInputs("fullName", ["from_name", "name_place"]); // Name → Leave & Complaint
+            syncInputs("studentId", ["studentid"]); // Student ID → Leave form
+            syncInputs("course", ["course"]); // Course → Leave form
+            syncInputs("roomNumber", ["Room_num"]); // Room No → Complaint
+        });
+
+
+
+        // 🔄 Map hostel names to warden names
+        const hostelWardens = {
+            "Himgiri Hostel": "Mr. Abhishek Gupta",
+            "Nilgiri Hostel": "Mr. Kedar Singh",
+            "Aravali 1 Hostel": "Mr. Desh Singh",
+            "Aravali 2 Hostel": "Ms. Iyer",
+            "Shivalik Hostel": "Mr. Khan",
+            "Himalaya Hostel": "Mr. Abhishek Gupta",
+            "Bhagirathi Hostel": "Mr. Kedar Singh",
+            "Narmada Hostel": "Mr. Desh Singh",
+            "Godavari Hostel": "Ms. Iyer",
+            "Kaveri Hostel": "Mr. Khan"
+        };
+
+        // ✅ Auto-fill warden name when hostel changes
+        document.addEventListener("DOMContentLoaded", () => {
+            const hostelSelect = document.getElementById("hostelName");
+            const wardenInput = document.getElementById("wardenName");
+
+            hostelSelect.addEventListener("change", () => {
+                const selectedHostel = hostelSelect.value;
+                wardenInput.value = hostelWardens[selectedHostel] || "";
+            });
+        });
+
+
+// timer to logout (milliseconds में)
+            const INACTIVITY_LIMIT = 1 * 60 * 1000; // 5 minutes
+
+            let inactivityTimer;
+
+            // logout function
+            function logout() {
+                localStorage.removeItem("loggedInUser"); // session removed
+            alert("Session expired due to inactivity.");
+            window.location.href = "hams_first.html"; // login page  redirect
+}
+
+            // reset inactivity timer
+            function resetTimer() {
+                clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(logout, INACTIVITY_LIMIT);
+}
+
+            // जब भी user कुछ activity करे तो reset हो जाए
+            window.onload = resetTimer;
+            document.onmousemove = resetTimer;
+            document.onkeydown = resetTimer;
+            document.onclick = resetTimer;
+            document.onscroll = resetTimer;
+    
+
+
+
+
+    </script>
+</body>
+
+</html>

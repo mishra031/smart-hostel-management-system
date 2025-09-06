@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Attendance Scanner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f6f9;
+      padding: 20px;
+    }
+    #reader {
+      width: 300px;
+      margin: auto;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      background: white;
+      padding: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: green;
+    }
+    #upload {
+      margin-top: 15px;
+      padding: 8px 15px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #upload:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>📷 Scan QR Code for Attendance</h2>
+  <div id="reader"></div>
+  
+  <!-- ✅ Upload Option -->
+  <input type="file" id="qr-file" accept="image/*" style="display:none" />
+  <button id="upload">📂 Upload QR Code Image</button>
+  
+  <div id="result">Waiting for scan...</div>
+
+  <!-- ✅ QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  
+  <script>
+    const html5QrCode = new Html5Qrcode("reader");
+
+    function markAttendance(decodedText) {
+      let now = new Date();
+      document.getElementById("result").innerHTML = `
+        ✅ Attendance Marked<br>
+        <b>ID:</b> ${decodedText}<br>
+        <b>Time:</b> ${now.toLocaleTimeString()}
+      `;
+
+      // 🔊 Optional Voice
+      let speech = new SpeechSynthesisUtterance("Attendance marked for " + decodedText);
+      speech.lang = "en-IN";
+      window.speechSynthesis.speak(speech);
+    }
+
+    // 🎥 Start Camera Scanner
+    function startScanner() {
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          markAttendance(decodedText);
+          html5QrCode.stop(); // stop after scan
+        },
+        (errorMessage) => { /* ignore errors */ }
+      ).catch(err => console.error("Camera start failed", err));
+    }
+    startScanner();
+
+    // 📂 Upload Image Scanner
+    document.getElementById("upload").addEventListener("click", () => {
+      document.getElementById("qr-file").click();
+    });
+
+    document.getElementById("qr-file").addEventListener("change", (e) => {
+      if (e.target.files.length === 0) return;
+
+      const file = e.target.files[0];
+
+      // ✅ Use FileReader to pass blob
+      html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+          markAttendance(decodedText);
+        })
+        .catch(err => {
+          document.getElementById("result").innerHTML = "❌ No QR code found in image.";
+          console.error(err);
+        });
+    });
+  </script>
+</body>
+</html>

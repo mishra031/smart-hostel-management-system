@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warden Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1e40af;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+
+        .modal {
+            backdrop-filter: blur(4px);
+        }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .success-popup {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .error-popup {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .emergency-flash {
+            animation: emergencyFlash 0.5s infinite alternate;
+        }
+
+        @keyframes emergencyFlash {
+            from {
+                background-color: #fee2e2;
+            }
+
+            to {
+                background-color: #fca5a5;
+            }
+        }
+
+        #warden_panel {
+            margin-left: -132px;
+        }
+
+        #notification_icon {
+            margin-right: -140px;
+            gap: 9px;
+        }
+
+        #menu_bar {
+            background-color: white;
+            color: black;
+            border: 0;
+
+            margin-right: -4px;
+            width: 96px;
+            height: 39px;
+            border-radius: 6px;
+            /* margin-top: 23px; */
+        }
+
+        #menu_dot {
+            height: 70px;
+        }
+
+        #side_bar {
+            margin-top: 19px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <nav id="menu_dot" class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div id="warden_panel" class="flex items-center space-x-3">
+                    <!-- Logo -->
+                    <img src="invertis_logo.png" alt="Logo" class="w-10 h-10 object-contain">
+                    <!-- Title -->
+                    <h1 class="text-xl font-bold text-gray-900">Warden Panel</h1>
+                </div>
+
+                <div id="notification_icon" class="flex items-center space-x-4">
+                    <!-- Notification Icon -->
+                    <div class="notification-icon cursor-pointer" onclick="showNotificationCenter()">
+                        <div class="text-2xl">🕭</div>
+                        <div id="notificationBadge" class="notification-badge hidden">0</div>
+                    </div>
+
+                    <!-- Profile -->
+                    <div class="flex items-center space-x-2">
+                        <img id="navProfilePic"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23e5e7eb'/%3E%3Cpath d='M16 16c3 0 5.5-2.5 5.5-5.5S19 5 16 5s-5.5 2.5-5.5 5.5S13 16 16 16zm0 2.5c-3.67 0-11 1.83-11 5.5V26h22v-2c0-3.67-7.33-5.5-11-5.5z' fill='%239ca3af'/%3E%3C/svg%3E"
+                            alt="Profile" class="w-8 h-8 rounded-full">
+                        <span id="navWardenName" class="text-sm font-medium text-gray-700">Warden</span>
+                    </div>
+
+                    <!-- Logout Button -->
+                    <div>
+                        <button onclick="window.location.href='hams_first.html'"
+                            style="background:#e3342f; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">
+                            Logout
+                        </button>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <!-- Sidebar -->
+        <!-- Toggle Button (Top Navbar or Anywhere) -->
+        <button onclick="toggleSidebar()" id="menu_bar" class=" top-4 left-4 z-50 bg-blue-600 text-white px-4 py-2 ">
+            ☰ Menu
+        </button>
+
+        <!-- Sidebar -->
+        <div id="sidebar"
+            class="fixed left-0 top-16 w-64 bg-white shadow-lg h-screen transform -translate-x-full transition-transform duration-300 z-40">
+            <div class="p-6">
+                <nav id="side_bar" class="space-y-2">
+
+                    <button onclick="showSection('profile', event)"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                        Profile Management
+                    </button>
+
+                    <button onclick="showSection('dashboard', event)"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                        Dashboard
+                    </button>
+
+                    <button onclick="showSection('attendance', event)"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                        Mark Attendance
+                    </button>
+
+                    <button onclick="showSection('complaints', event)"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                        Complaints
+                    </button>
+
+                    <button onclick="showSection('hospital', event)"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                        Hospital Visits
+                    </button>
+                </nav>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <!-- Profile Section -->
+            <div id="profileSection" class="section">
+                <div class="bg-white rounded-xl shadow-lg p-8 card-hover">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+
+                        Warden Profile Management
+                    </h2>
+
+                    <div class="grid lg:grid-cols-3 gap-8">
+                        <!-- Profile Picture -->
+                        <div class="text-center">
+                            <div class="mb-6">
+                                <img id="profilePic" src="profile_logo.png" alt="Profile Picture"
+                                    class="profile-pic mx-auto mb-4">
+                            </div>
+                            <input type="file" id="picUpload" accept="image/*" class="hidden">
+                            <button onclick="document.getElementById('picUpload').click()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors font-medium">
+                                Upload Photo
+                            </button>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                <input type="text" id="wardenName" placeholder="Enter your full name"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Employee ID *</label>
+                                <input type="text" id="employeeId" placeholder="Enter employee ID"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number *</label>
+                                <input type="tel" id="contactNumber" placeholder="Enter contact number"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <!-- Hostel Assignment -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Hostel Assignment</h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hostel Type *</label>
+                                <select id="hostelType" onchange="updateHostelOptions()"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Hostel Type</option>
+                                    <option value="boys">Boys Hostel Warden</option>
+                                    <option value="girls">Girls Hostel Warden</option>
+                                </select>
+                            </div>
+
+                            <div id="hostelSelection" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Assigned Hostel *</label>
+                                <select id="assignedHostel" onchange="updateDashboard()"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Hostel</option>
+                                </select>
+                            </div>
+
+                            <button onclick="saveProfile()"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg transition-colors font-medium">
+                                ⎙ Save Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
+                        <span class="mr-3">𓂃✍︎</span>
+                        Dashboard Overview
+                    </h2>
+                    <p class="text-gray-600">Real-time hostel management statistics</p>
+                </div>
+
+                <div id="dashboardStats" class="hidden">
+                    <!-- Stats Cards -->
+                    <div class="grid md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-blue-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Current
+                                        Students</p>
+                                    <p id="currentStudents" class="text-3xl font-bold text-gray-900 mt-2">185</p>
+                                </div>
+                                <div class="p-3 bg-blue-100 rounded-full">
+                                    <span class="text-2xl">𖨆𖨆</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-yellow-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Pending
+                                        Complaints</p>
+                                    <p id="pendingComplaints" class="text-3xl font-bold text-gray-900 mt-2">7</p>
+                                </div>
+                                <div class="p-3 bg-yellow-100 rounded-full">
+                                    <span class="text-2xl">𓂃✍︎</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-red-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Hospital Visits
+                                    </p>
+                                    <p id="hospitalVisits" class="text-3xl font-bold text-gray-900 mt-2">3</p>
+                                </div>
+                                <div class="p-3 bg-red-100 rounded-full">
+                                    <span class="text-2xl">⛨</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Quick Actions</h3>
+                        <div class="grid md:grid-cols-5 gap-4">
+                            <button onclick="showSection('attendance')"
+                                class="bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-lg transition-colors text-center">
+                                <div class="text-2xl mb-2">✓</div>
+                                <div class="font-medium">Mark Attendance</div>
+                            </button>
+                            <button onclick="showSection('complaints')"
+                                class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 p-4 rounded-lg transition-colors text-center">
+                                <div class="text-2xl mb-2">𓂃✍︎</div>
+                                <div class="font-medium">View Complaints</div>
+                            </button>
+                            <button onclick="showSection('hospital')"
+                                class="bg-red-50 hover:bg-red-100 text-red-700 p-4 rounded-lg transition-colors text-center">
+                                <div class="text-2xl mb-2">⛨</div>
+                                <div class="font-medium">Hospital Visits</div>
+                            </button>
+                            <button onclick="quickEmergencyAlert()"
+                                class="bg-red-100 hover:bg-red-200 text-red-800 p-4 rounded-lg transition-colors text-center border-2 border-red-300">
+                                <div class="text-2xl mb-2">🕭</div>
+                                <div class="font-medium">EMERGENCY</div>
+                            </button>
+                            <button onclick="generateReport()"
+                                class="bg-green-50 hover:bg-green-100 text-green-700 p-4 rounded-lg transition-colors text-center">
+                                <div class="text-2xl mb-2">✍︎</div>
+                                <div class="font-medium">Generate Report</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hostel-Based Attendance Quick Access -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover mt-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <span class="mr-3">🏠︎</span>
+                            Quick Attendance by Hostel
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <!-- Girls Hostels -->
+                            <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-pink-800 mb-4 flex items-center">
+                                    <span class="mr-2">𖠋</span>
+                                    Girls Hostels
+                                </h4>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="quickAttendanceByHostel('girls', 'Godavari')"
+                                        class="bg-white hover:bg-pink-100 text-pink-700 border border-pink-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Godavari
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('girls', 'Kaveri')"
+                                        class="bg-white hover:bg-pink-100 text-pink-700 border border-pink-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Kaveri
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('girls', 'Bhagirathi')"
+                                        class="bg-white hover:bg-pink-100 text-pink-700 border border-pink-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Bhagirathi
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('girls', 'Narmada')"
+                                        class="bg-white hover:bg-pink-100 text-pink-700 border border-pink-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Narmada
+                                    </button>
+                                </div>
+                                <button onclick="quickAttendanceByHostel('girls', 'all')"
+                                    class="w-full mt-3 bg-pink-600 hover:bg-pink-700 text-white py-2 px-4 rounded-lg text-sm transition-colors font-medium">
+                                    ✔ All Girls Hostels
+                                </button>
+                            </div>
+
+                            <!-- Boys Hostels -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
+                                    <span class="mr-2">𐀪</span>
+                                    Boys Hostels
+                                </h4>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="quickAttendanceByHostel('boys', 'Himgiri')"
+                                        class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Himgiri
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('boys', 'Nilgiri')"
+                                        class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Nilgiri
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('boys', 'Shivalik')"
+                                        class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Shivalik
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('boys', 'Himalaya')"
+                                        class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Himalaya
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('boys', 'Aravali 1')"
+                                        class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Aravali 1
+                                    </button>
+                                    <button onclick="quickAttendanceByHostel('boys', 'Aravali 2')"
+                                        class="bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-3 py-2 rounded-lg text-sm transition-colors">
+                                        Aravali 2
+                                    </button>
+                                </div>
+                                <button onclick="quickAttendanceByHostel('boys', 'all')"
+                                    class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm transition-colors font-medium">
+                                    ✔ All Boys Hostels
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Section -->
+            <div id="attendanceSection" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
+                        <span class="mr-3">✔</span>
+                        Manual Attendance Marking
+                    </h2>
+                    <p class="text-gray-600">Mark student attendance for today</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Today's Attendance</h3>
+                            <p class="text-sm text-gray-600" id="attendanceDate"></p>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button onclick="markAllPresent()"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                ✔Mark All Present
+                            </button>
+                            <button onclick="saveAttendance()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                ⎙ Save Attendance
+                            </button>
+                            <button onclick="downloadAttendanceExcel()"
+                                class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors">
+                                🕮Download Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hostel Filter Controls -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-medium text-gray-700">Filter by Hostel:</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <select id="attendanceHostelType" onchange="updateAttendanceHostelOptions()"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                    <option value="all">All Hostels</option>
+                                    <option value="girls">Girls Hostels</option>
+                                    <option value="boys">Boys Hostels</option>
+                                </select>
+                                <select id="attendanceSpecificHostel" onchange="filterAttendanceByHostel()"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                    <option value="all">All Buildings</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span id="attendanceCount">Showing: 0 students</span>
+                                <span id="attendanceStats">Present: 0 | Absent: 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="attendanceList" class="attendance-grid">
+                        <!-- Attendance cards will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaints Section -->
+            <div id="complaintsSection" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
+                        <span class="mr-3">𓂃✍︎</span>
+                        Complaints Management
+                    </h2>
+                    <p class="text-gray-600">View and manage student complaints</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex space-x-4">
+                            <select id="complaintFilter" onchange="filterComplaints()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="all">All Complaints</option>
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                            <select id="priorityFilter" onchange="filterComplaints()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="all">All Priorities</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                        </div>
+                        <button onclick="refreshComplaints()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            🗘Refresh
+                        </button>
+                    </div>
+
+                    <div id="complaintsList" class="space-y-4">
+                        <!-- Complaints will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Visits Section -->
+            <div id="hospitalSection" class="section hidden">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
+                        <span class="mr-3">⛨</span>
+                        Hospital Visits Management
+                    </h2>
+                    <p class="text-gray-600">Track and manage student hospital visits</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex space-x-4">
+                            <select id="visitFilter" onchange="filterHospitalVisits()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="all">All Visits</option>
+                                <option value="active">Currently at Hospital</option>
+                                <option value="returned">Returned</option>
+                            </select>
+                            <input type="date" id="visitDateFilter" onchange="filterHospitalVisits()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button onclick="addHospitalVisit()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            ✚ Add Visit
+                        </button>
+                    </div>
+
+                    <div id="hospitalVisitsList" class="space-y-4">
+                        <!-- Hospital visits will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Alert Modal -->
+    <div id="emergencyModal"
+        class="fixed inset-0 bg-red-900 bg-opacity-75 flex items-center justify-center z-50 modal hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 border-4 border-red-500">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4 animate-pulse">🛎</div>
+                <h2 class="text-2xl font-bold text-red-600 mb-2">EMERGENCY ALERT</h2>
+                <p class="text-gray-700">Medical emergency reported - immediate action required</p>
+            </div>
+
+            <div id="emergencyDetails" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <!-- Emergency details will be populated here -->
+            </div>
+
+            <div class="flex space-x-4">
+                <button onclick="acknowledgeEmergency()"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg transition-colors font-medium">
+                    🛎 Acknowledge & Take Action
+                </button>
+                <button onclick="closeEmergencyAlert()"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 px-4 rounded-lg transition-colors font-medium">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Center Modal -->
+    <div id="notificationModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">🕭 Notifications</h3>
+                <button onclick="closeNotificationCenter()"
+                    class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div id="notificationList" class="space-y-3 max-h-96 overflow-y-auto">
+                <!-- Notifications will be populated here -->
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <button onclick="clearAllNotifications()"
+                    class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors">
+                    Clear All Notifications
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Popup -->
+    <div id="popupContainer" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Popups will be dynamically added here -->
+    </div>
+
+    <script>
+        // Global data
+        const hostelData = {
+            girls: [
+                { name: 'Godavari', current: 165 },
+                { name: 'Kaveri', current: 185 },
+                { name: 'Bhagirathi', current: 142 },
+                { name: 'Narmada', current: 158 }
+            ],
+            boys: [
+                { name: 'Himgiri', current: 205 },
+                { name: 'Nilgiri', current: 188 },
+                { name: 'Shivalik', current: 172 },
+                { name: 'Himalaya', current: 235 },
+                { name: 'Aravali 1', current: 178 },
+                { name: 'Aravali 2', current: 181 }
+            ]
+        };
+
+        let students = [];
+        let complaints = [];
+        let hospitalVisits = [];
+        let attendance = {};
+        let notifications = [];
+        let currentAttendanceFilter = 'all';
+
+        // Initialize data
+        function initializeData() {
+            // Sample students data with hostel assignments
+            students = [
+                { id: 1, name: 'Priya Sharma', room: '205', rollNo: 'CS001', hostel: 'Godavari', hostelType: 'girls' },
+                { id: 2, name: 'Anjali Patel', room: '312', rollNo: 'CS002', hostel: 'Kaveri', hostelType: 'girls' },
+                { id: 3, name: 'Meera Singh', room: '108', rollNo: 'CS003', hostel: 'Bhagirathi', hostelType: 'girls' },
+                { id: 4, name: 'Sneha Reddy', room: '215', rollNo: 'CS004', hostel: 'Narmada', hostelType: 'girls' },
+                { id: 5, name: 'Kavya Nair', room: '301', rollNo: 'CS005', hostel: 'Godavari', hostelType: 'girls' },
+                { id: 6, name: 'Riya Gupta', room: '156', rollNo: 'CS006', hostel: 'Kaveri', hostelType: 'girls' },
+                { id: 7, name: 'Pooja Jain', room: '278', rollNo: 'CS007', hostel: 'Bhagirathi', hostelType: 'girls' },
+                { id: 8, name: 'Divya Kumar', room: '189', rollNo: 'CS008', hostel: 'Narmada', hostelType: 'girls' },
+                { id: 9, name: 'Rahul Sharma', room: '105', rollNo: 'CS009', hostel: 'Himgiri', hostelType: 'boys' },
+                { id: 10, name: 'Arjun Patel', room: '220', rollNo: 'CS010', hostel: 'Nilgiri', hostelType: 'boys' },
+                { id: 11, name: 'Vikram Singh', room: '315', rollNo: 'CS011', hostel: 'Shivalik', hostelType: 'boys' },
+                { id: 12, name: 'Karan Reddy', room: '142', rollNo: 'CS012', hostel: 'Himalaya', hostelType: 'boys' },
+                { id: 13, name: 'Amit Nair', room: '208', rollNo: 'CS013', hostel: 'Aravali 1', hostelType: 'boys' },
+                { id: 14, name: 'Rohit Gupta', room: '167', rollNo: 'CS014', hostel: 'Aravali 2', hostelType: 'boys' }
+            ];
+
+            // Sample complaints data
+            complaints = [
+                { id: 1, student: 'Priya Sharma', room: '205', issue: 'Water Leakage', priority: 'high', status: 'pending', date: '2024-01-15T14:30:00', description: 'Severe water leakage in bathroom ceiling' },
+                { id: 2, student: 'Anjali Patel', room: '312', issue: 'AC Not Working', priority: 'medium', status: 'in-progress', date: '2024-01-15T09:15:00', description: 'Air conditioning unit not cooling properly' },
+                { id: 3, student: 'Meera Singh', room: '108', issue: 'WiFi Issues', priority: 'low', status: 'pending', date: '2024-01-14T16:45:00', description: 'Intermittent WiFi connectivity in room' },
+                { id: 4, student: 'Sneha Reddy', room: '215', issue: 'Electrical Problem', priority: 'high', status: 'resolved', date: '2024-01-13T11:20:00', description: 'Power socket not working' },
+                { id: 5, student: 'Kavya Nair', room: '301', issue: 'Carpainter Work', priority: 'medium', status: 'pending', date: '2024-01-15T08:30:00', description: 'Study table drawer broken' }
+            ];
+
+            // Sample hospital visits data
+            hospitalVisits = [
+                { id: 1, student: 'Sneha Reddy', room: '108', reason: 'Fever', status: 'active', visitDate: '2024-01-15T14:30:00', returnDate: null, notes: 'High fever, under observation' },
+                { id: 2, student: 'Kavya Nair', room: '215', reason: 'Stomach Pain', status: 'returned', visitDate: '2024-01-14T16:15:00', returnDate: '2024-01-14T20:30:00', notes: 'Food poisoning, recovered' },
+                { id: 3, student: 'Riya Gupta', room: '301', reason: 'Regular Checkup', status: 'returned', visitDate: '2024-01-13T10:00:00', returnDate: '2024-01-13T12:00:00', notes: 'Routine health checkup' }
+            ];
+
+            // Initialize attendance for today
+            const today = new Date().toISOString().split('T')[0];
+            attendance[today] = {};
+            students.forEach(student => {
+                attendance[today][student.id] = 'present'; // Default to present
+            });
+
+            // Initialize notifications
+            notifications = [
+                { id: 1, type: 'info', title: 'System Ready', message: 'Hostel management system is ready for use', time: new Date().toISOString(), read: false },
+                { id: 2, type: 'warning', title: 'Pending Complaints', message: '7 complaints require your attention', time: new Date().toISOString(), read: false }
+            ];
+        }
+
+        // Notification functions
+        function addNotification(type, title, message) {
+            const notification = {
+                id: Date.now(),
+                type: type,
+                title: title,
+                message: message,
+                time: new Date().toISOString(),
+                read: false
+            };
+            notifications.unshift(notification);
+            updateNotificationBadge();
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notificationBadge');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function showNotificationCenter() {
+            const modal = document.getElementById('notificationModal');
+            const notificationList = document.getElementById('notificationList');
+
+            if (notifications.length === 0) {
+                notificationList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">🕭</div>
+                        <p>No notifications yet</p>
+                    </div>
+                `;
+            } else {
+                notificationList.innerHTML = notifications.map(notification => {
+                    const typeColors = {
+                        success: 'border-green-400 bg-green-50 text-green-800',
+                        error: 'border-red-400 bg-red-50 text-red-800',
+                        warning: 'border-yellow-400 bg-yellow-50 text-yellow-800',
+                        info: 'border-blue-400 bg-blue-50 text-blue-800'
+                    };
+
+                    return `
+                        <div class="border-l-4 ${typeColors[notification.type]} p-3 rounded-r-lg ${notification.read ? 'opacity-60' : ''}">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h4 class="font-medium">${notification.title}</h4>
+                                    <p class="text-sm mt-1">${notification.message}</p>
+                                    <p class="text-xs mt-2 opacity-75">${new Date(notification.time).toLocaleString()}</p>
+                                </div>
+                                ${!notification.read ? '<div class="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Mark all as read
+            notifications.forEach(n => n.read = true);
+            updateNotificationBadge();
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeNotificationCenter() {
+            document.getElementById('notificationModal').classList.add('hidden');
+        }
+
+        function clearAllNotifications() {
+            notifications = [];
+            updateNotificationBadge();
+            closeNotificationCenter();
+            showPopup('success', 'All notifications cleared');
+        }
+
+        // Popup functions
+        function showPopup(type, message, duration = 3000) {
+            const popup = document.createElement('div');
+            const typeStyles = {
+                success: 'bg-green-500 text-white',
+                error: 'bg-red-500 text-white',
+                warning: 'bg-yellow-500 text-white',
+                info: 'bg-blue-500 text-white'
+            };
+
+            popup.className = `${typeStyles[type]} px-6 py-4 rounded-lg shadow-lg ${type === 'success' ? 'success-popup' : 'error-popup'} max-w-sm`;
+            popup.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="text-xl">
+                        ${type === 'success' ? '✔' : type === 'error' ? 'X' : type === 'warning' ? '!' : 'ℹ'}
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">
+                        ×
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('popupContainer').appendChild(popup);
+
+            setTimeout(() => {
+                if (popup.parentElement) {
+                    popup.remove();
+                }
+            }, duration);
+        }
+
+        // Excel download function
+        function downloadAttendanceExcel() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const todayFormatted = new Date().toLocaleDateString();
+
+                // Get currently filtered students
+                const hostelType = document.getElementById('attendanceHostelType').value;
+                const specificHostel = document.getElementById('attendanceSpecificHostel').value;
+
+                let filteredStudents = students;
+
+                // Apply filters
+                if (hostelType !== 'all') {
+                    filteredStudents = filteredStudents.filter(student => student.hostelType === hostelType);
+                }
+                if (specificHostel !== 'all') {
+                    filteredStudents = filteredStudents.filter(student => student.hostel === specificHostel);
+                }
+
+                // Prepare data for Excel
+                const excelData = filteredStudents.map(student => ({
+                    'Student Name': student.name,
+                    'Roll Number': student.rollNo,
+                    'Room Number': student.room,
+                    'Hostel': student.hostel,
+                    'Hostel Type': student.hostelType.charAt(0).toUpperCase() + student.hostelType.slice(1),
+                    'Attendance Status': attendance[today] && attendance[today][student.id] ?
+                        attendance[today][student.id].toUpperCase() : 'NOT MARKED',
+                    'Date': todayFormatted,
+                    'Marked By': document.getElementById('navWardenName').textContent || 'Warden'
+                }));
+
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelData);
+
+                // Set column widths
+                const colWidths = [
+                    { wch: 20 }, // Student Name
+                    { wch: 12 }, // Roll Number
+                    { wch: 12 }, // Room Number
+                    { wch: 15 }, // Hostel
+                    { wch: 12 }, // Hostel Type
+                    { wch: 18 }, // Attendance Status
+                    { wch: 12 }, // Date
+                    { wch: 15 }  // Marked By
+                ];
+                ws['!cols'] = colWidths;
+
+                // Add worksheet to workbook
+                const sheetName = specificHostel !== 'all' ? specificHostel :
+                    (hostelType !== 'all' ? `${hostelType.charAt(0).toUpperCase() + hostelType.slice(1)} Hostels` : 'All Hostels');
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+                // Generate filename
+                const filename = `Attendance_${sheetName.replace(/\s+/g, '_')}_${today}.xlsx`;
+
+                // Download file
+                XLSX.writeFile(wb, filename);
+
+                showPopup('success', `Excel file downloaded successfully! (${filteredStudents.length} students)`);
+                addNotification('success', 'Excel Download', `Attendance record downloaded for ${filteredStudents.length} students`);
+
+            } catch (error) {
+                console.error('Excel download error:', error);
+                showPopup('error', 'Failed to download Excel file. Please try again.');
+                addNotification('error', 'Download Failed', 'Excel download encountered an error');
+            }
+        }
+
+        function showSection(sectionName, event) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName + 'Section').classList.remove('hidden');
+
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-100', 'text-blue-700');
+            });
+
+            event.currentTarget.classList.add('bg-blue-100', 'text-blue-700');
+
+            // Load section-specific data
+            if (sectionName === 'attendance') {
+                loadAttendanceData();
+            } else if (sectionName === 'complaints') {
+                loadComplaintsData();
+            } else if (sectionName === 'hospital') {
+                loadHospitalVisitsData();
+            }
+        }
+
+
+        // Profile management
+        document.getElementById('picUpload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('profilePic').src = e.target.result;
+                    document.getElementById('navProfilePic').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateHostelOptions() {
+            const hostelType = document.getElementById('hostelType').value;
+            const hostelSelection = document.getElementById('hostelSelection');
+            const assignedHostel = document.getElementById('assignedHostel');
+
+            if (hostelType) {
+                hostelSelection.classList.remove('hidden');
+                assignedHostel.innerHTML = '<option value="">Select Hostel</option>';
+
+                hostelData[hostelType].forEach(hostel => {
+                    const option = document.createElement('option');
+                    option.value = hostel.name.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = hostel.name;
+                    assignedHostel.appendChild(option);
+                });
+            } else {
+                hostelSelection.classList.add('hidden');
+            }
+        }
+
+        function updateDashboard() {
+            const hostelType = document.getElementById('hostelType').value;
+            const selectedHostel = document.getElementById('assignedHostel').value;
+
+            if (hostelType && selectedHostel) {
+                const hostelInfo = hostelData[hostelType].find(h =>
+                    h.name.toLowerCase().replace(/\s+/g, '-') === selectedHostel
+                );
+
+                if (hostelInfo) {
+                    document.getElementById('currentStudents').textContent = hostelInfo.current;
+                    document.getElementById('dashboardStats').classList.remove('hidden');
+                }
+            }
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('wardenName').value;
+            const employeeId = document.getElementById('employeeId').value;
+            const contact = document.getElementById('contactNumber').value;
+            const hostelType = document.getElementById('hostelType').value;
+            const assignedHostel = document.getElementById('assignedHostel').value;
+
+            if (!name || !employeeId || !contact || !hostelType || !assignedHostel) {
+                showPopup('error', 'Please fill in all required fields');
+                return;
+            }
+
+            try {
+                const profileData = {
+                    name, employeeId, contact, hostelType, assignedHostel,
+                    profilePic: document.getElementById('profilePic').src
+                };
+                localStorage.setItem('wardenProfile', JSON.stringify(profileData));
+
+                // Update nav display
+                document.getElementById('navWardenName').textContent = name;
+
+                showPopup('success', 'Profile saved successfully!');
+                addNotification('success', 'Profile Updated', `Profile saved for ${name}`);
+                updateDashboard();
+            } catch (error) {
+                showPopup('error', 'Failed to save profile. Please try again.');
+                addNotification('error', 'Save Failed', 'Profile could not be saved');
+            }
+        }
+
+        // Attendance functions
+        function loadAttendanceData() {
+            const today = new Date();
+            document.getElementById('attendanceDate').textContent = today.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Initialize hostel filter options
+            updateAttendanceHostelOptions();
+            filterAttendanceByHostel();
+        }
+
+        function updateAttendanceHostelOptions() {
+            const hostelType = document.getElementById('attendanceHostelType').value;
+            const specificHostelSelect = document.getElementById('attendanceSpecificHostel');
+
+            // Clear existing options
+            specificHostelSelect.innerHTML = '<option value="all">All Buildings</option>';
+
+            if (hostelType !== 'all') {
+                hostelData[hostelType].forEach(hostel => {
+                    const option = document.createElement('option');
+                    option.value = hostel.name;
+                    option.textContent = hostel.name;
+                    specificHostelSelect.appendChild(option);
+                });
+            }
+
+            // Reset to show all buildings and filter
+            specificHostelSelect.value = 'all';
+            filterAttendanceByHostel();
+        }
+
+        function filterAttendanceByHostel() {
+            const hostelType = document.getElementById('attendanceHostelType').value;
+            const specificHostel = document.getElementById('attendanceSpecificHostel').value;
+
+            let filteredStudents = students;
+
+            // Filter by hostel type
+            if (hostelType !== 'all') {
+                filteredStudents = filteredStudents.filter(student => student.hostelType === hostelType);
+            }
+
+            // Filter by specific hostel
+            if (specificHostel !== 'all') {
+                filteredStudents = filteredStudents.filter(student => student.hostel === specificHostel);
+            }
+
+            // Update the display
+            displayFilteredAttendance(filteredStudents);
+            updateAttendanceStats(filteredStudents);
+        }
+
+        function displayFilteredAttendance(filteredStudents) {
+            const attendanceList = document.getElementById('attendanceList');
+            const todayKey = new Date().toISOString().split('T')[0];
+
+            if (filteredStudents.length === 0) {
+                attendanceList.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-4">🏠︎</div>
+                        <p class="text-lg font-medium">No students found</p>
+                        <p class="text-sm">Try adjusting your hostel filter settings</p>
+                    </div>
+                `;
+                return;
+            }
+
+            attendanceList.innerHTML = filteredStudents.map(student => `
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${student.name}</h4>
+                            <p class="text-sm text-gray-600">Room ${student.room} • ${student.rollNo}</p>
+                            <p class="text-xs text-blue-600 font-medium">${student.hostel} Hostel</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="markAttendance(${student.id}, 'present')" 
+                                class="attendance-btn ${attendance[todayKey] && attendance[todayKey][student.id] === 'present' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'} px-3 py-1 rounded-lg text-sm transition-colors hover:shadow-sm">
+                                Present
+                            </button>
+                            <button onclick="markAttendance(${student.id}, 'absent')" 
+                                class="attendance-btn ${attendance[todayKey] && attendance[todayKey][student.id] === 'absent' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'} px-3 py-1 rounded-lg text-sm transition-colors hover:shadow-sm">
+                                Absent
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Status: <span class="font-medium ${attendance[todayKey] && attendance[todayKey][student.id] === 'present' ? 'text-green-600' : attendance[todayKey] && attendance[todayKey][student.id] === 'absent' ? 'text-red-600' : 'text-gray-600'}">${attendance[todayKey] && attendance[todayKey][student.id] ? attendance[todayKey][student.id].toUpperCase() : 'NOT MARKED'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAttendanceStats(filteredStudents) {
+            const todayKey = new Date().toISOString().split('T')[0];
+            const totalStudents = filteredStudents.length;
+
+            let presentCount = 0;
+            let absentCount = 0;
+
+            filteredStudents.forEach(student => {
+                if (attendance[todayKey] && attendance[todayKey][student.id]) {
+                    if (attendance[todayKey][student.id] === 'present') {
+                        presentCount++;
+                    } else if (attendance[todayKey][student.id] === 'absent') {
+                        absentCount++;
+                    }
+                }
+            });
+
+            document.getElementById('attendanceCount').textContent = `Showing: ${totalStudents} students`;
+            document.getElementById('attendanceStats').textContent = `Present: ${presentCount} | Absent: ${absentCount} | Not Marked: ${totalStudents - presentCount - absentCount}`;
+        }
+
+        function markAttendance(studentId, status) {
+            const today = new Date().toISOString().split('T')[0];
+            if (!attendance[today]) {
+                attendance[today] = {};
+            }
+            attendance[today][studentId] = status;
+
+            // Show notification popup for absent students
+            if (status === 'absent') {
+                const student = students.find(s => s.id === studentId);
+                if (student) {
+                    showAbsentNotification(student);
+                    addNotification('warning', 'Student Absent', `${student.name} marked absent - action required`);
+                }
+            }
+
+            filterAttendanceByHostel(); // Refresh the filtered display
+        }
+
+        function markAllPresent() {
+            const today = new Date().toISOString().split('T')[0];
+            if (!attendance[today]) {
+                attendance[today] = {};
+            }
+
+            // Get currently filtered students
+            const hostelType = document.getElementById('attendanceHostelType').value;
+            const specificHostel = document.getElementById('attendanceSpecificHostel').value;
+
+            let filteredStudents = students;
+
+            // Filter by hostel type
+            if (hostelType !== 'all') {
+                filteredStudents = filteredStudents.filter(student => student.hostelType === hostelType);
+            }
+
+            // Filter by specific hostel
+            if (specificHostel !== 'all') {
+                filteredStudents = filteredStudents.filter(student => student.hostel === specificHostel);
+            }
+
+            // Mark only filtered students as present
+            filteredStudents.forEach(student => {
+                attendance[today][student.id] = 'present';
+            });
+
+            filterAttendanceByHostel(); // Refresh the display
+
+            const hostelText = specificHostel !== 'all' ? specificHostel : (hostelType !== 'all' ? `all ${hostelType} hostels` : 'all hostels');
+            showPopup('success', `Marked ${filteredStudents.length} students from ${hostelText} as present!`);
+            addNotification('success', 'Bulk Attendance', `${filteredStudents.length} students marked present`);
+        }
+
+        function saveAttendance() {
+            try {
+                localStorage.setItem('attendance', JSON.stringify(attendance));
+                showPopup('success', 'Attendance saved successfully!');
+                addNotification('success', 'Attendance Saved', 'Daily attendance record saved to system');
+            } catch (error) {
+                showPopup('error', 'Failed to save attendance. Please try again.');
+                addNotification('error', 'Save Failed', 'Attendance could not be saved');
+            }
+        }
+
+        // Complaints functions
+        function loadComplaintsData() {
+            filterComplaints();
+        }
+
+        function filterComplaints() {
+            const statusFilter = document.getElementById('complaintFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+
+            let filteredComplaints = complaints;
+
+            if (statusFilter !== 'all') {
+                filteredComplaints = filteredComplaints.filter(c => c.status === statusFilter);
+            }
+
+            if (priorityFilter !== 'all') {
+                filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
+            }
+
+            const complaintsList = document.getElementById('complaintsList');
+            complaintsList.innerHTML = filteredComplaints.map(complaint => {
+                const priorityColors = {
+                    high: 'border-red-400 bg-red-50',
+                    medium: 'border-yellow-400 bg-yellow-50',
+                    low: 'border-green-400 bg-green-50'
+                };
+
+                const statusColors = {
+                    pending: 'bg-red-100 text-red-800',
+                    'in-progress': 'bg-yellow-100 text-yellow-800',
+                    resolved: 'bg-green-100 text-green-800'
+                };
+
+                return `
+                    <div class="border-l-4 ${priorityColors[complaint.priority]} p-4 rounded-r-lg">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800">${complaint.issue}</h4>
+                                <p class="text-sm text-gray-600">Room ${complaint.room} • ${complaint.student}</p>
+                                <p class="text-sm text-gray-700 mt-2">${complaint.description}</p>
+                                <p class="text-xs text-gray-500 mt-1">Submitted: ${new Date(complaint.date).toLocaleString()}</p>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="${statusColors[complaint.status]} text-xs px-2 py-1 rounded-full font-medium">${complaint.status.replace('-', ' ').toUpperCase()}</span>
+                                <span class="text-xs px-2 py-1 rounded-full font-medium ${complaint.priority === 'high' ? 'bg-red-100 text-red-800' : complaint.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">${complaint.priority.toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="updateComplaintStatus(${complaint.id}, 'in-progress')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                                In Progress
+                            </button>
+                            <button onclick="updateComplaintStatus(${complaint.id}, 'resolved')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                                Resolve
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateComplaintStatus(complaintId, newStatus) {
+            const complaint = complaints.find(c => c.id === complaintId);
+            if (complaint) {
+                const oldStatus = complaint.status;
+                complaint.status = newStatus;
+                filterComplaints();
+
+                const statusText = newStatus.replace('-', ' ');
+                showPopup('success', `Complaint status updated to ${statusText}`);
+                addNotification('info', 'Complaint Updated', `${complaint.issue} status changed from ${oldStatus} to ${newStatus}`);
+
+                // Show detailed popup based on status
+                if (newStatus === 'in-progress') {
+                    setTimeout(() => {
+                        showComplaintProgressPopup(complaint);
+                    }, 500);
+                } else if (newStatus === 'resolved') {
+                    setTimeout(() => {
+                        showComplaintResolvedPopup(complaint);
+                    }, 500);
+                }
+            }
+        }
+
+        function showComplaintProgressPopup(complaint) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-l-4 border-yellow-500">
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2">⚒</div>
+                        <h3 class="text-xl font-bold text-yellow-700">Complaint In Progress</h3>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-gray-800">${complaint.issue}</p>
+                        <p class="text-sm text-gray-600">Room ${complaint.room} • ${complaint.student}</p>
+                        <p class="text-sm text-yellow-700 mt-2">Status: Work in progress</p>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-700 mb-4">
+                        <p>✔ Complaint acknowledged</p>
+                        <p>⚒ Maintenance team assigned</p>
+                        <p>✍︎ Work order created</p>
+                        <p>⏱ Estimated completion: 24-48 hours</p>
+                    </div>
+                    <button onclick="this.closest('.modal').remove()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        Understood
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function showComplaintResolvedPopup(complaint) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-l-4 border-green-500">
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2">✔</div>
+                        <h3 class="text-xl font-bold text-green-700">Complaint Resolved</h3>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-gray-800">${complaint.issue}</p>
+                        <p class="text-sm text-gray-600">Room ${complaint.room} • ${complaint.student}</p>
+                        <p class="text-sm text-green-700 mt-2">Status: Successfully resolved</p>
+                        <p class="text-xs text-gray-500 mt-1">Resolved on: ${new Date().toLocaleString()}</p>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-700 mb-4">
+                        <p>✔ Issue has been fixed</p>
+                        <p>✍︎ Work completed and verified</p>
+                        <p>𖨆 Student will be notified</p>
+                        <p>〽Complaint closed in system</p>
+                    </div>
+                    <button onclick="this.closest('.modal').remove()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        Great!
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function refreshComplaints() {
+            filterComplaints();
+            showPopup('info', 'Complaints list refreshed');
+        }
+
+        // Hospital visits functions
+        function loadHospitalVisitsData() {
+            filterHospitalVisits();
+        }
+
+        function filterHospitalVisits() {
+            const statusFilter = document.getElementById('visitFilter').value;
+            const dateFilter = document.getElementById('visitDateFilter').value;
+
+            let filteredVisits = hospitalVisits;
+
+            if (statusFilter !== 'all') {
+                filteredVisits = filteredVisits.filter(v => v.status === statusFilter);
+            }
+
+            if (dateFilter) {
+                filteredVisits = filteredVisits.filter(v =>
+                    v.visitDate.startsWith(dateFilter)
+                );
+            }
+
+            const hospitalVisitsList = document.getElementById('hospitalVisitsList');
+            hospitalVisitsList.innerHTML = filteredVisits.map(visit => {
+                const statusColors = {
+                    active: 'bg-blue-100 text-blue-800 border-blue-200',
+                    returned: 'bg-gray-100 text-gray-800 border-gray-200'
+                };
+
+                return `
+                    <div class="border ${statusColors[visit.status]} p-4 rounded-lg">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800">${visit.student}</h4>
+                                <p class="text-sm text-gray-600">Room ${visit.room} • ${visit.reason}</p>
+                                <p class="text-sm text-gray-700 mt-2">${visit.notes}</p>
+                                <div class="text-xs text-gray-500 mt-2">
+                                    <p>Visit Date: ${new Date(visit.visitDate).toLocaleString()}</p>
+                                    ${visit.returnDate ? `<p>Return Date: ${new Date(visit.returnDate).toLocaleString()}</p>` : '<p>Currently at hospital</p>'}
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="${visit.status === 'active' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'} text-xs px-2 py-1 rounded-full font-medium">${visit.status.toUpperCase()}</span>
+                                ${visit.status === 'active' ? `<button onclick="markReturned(${visit.id})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors">Mark Returned</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function markReturned(visitId) {
+            const visit = hospitalVisits.find(v => v.id === visitId);
+            if (visit) {
+                visit.status = 'returned';
+                visit.returnDate = new Date().toISOString();
+                filterHospitalVisits();
+                showPopup('success', 'Student marked as returned from hospital');
+                addNotification('success', 'Student Returned', `${visit.student} has returned from hospital`);
+
+                // Show detailed return popup
+                setTimeout(() => {
+                    showHospitalReturnPopup(visit);
+                }, 500);
+            }
+        }
+
+        function showHospitalReturnPopup(visit) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-l-4 border-green-500">
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2">⛨➔🏠︎</div>
+                        <h3 class="text-xl font-bold text-green-700">Student Returned</h3>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-gray-800">${visit.student}</p>
+                        <p class="text-sm text-gray-600">Room ${visit.room}</p>
+                        <p class="text-sm text-green-700 mt-2">Reason: ${visit.reason}</p>
+                        <p class="text-xs text-gray-500 mt-1">Returned: ${new Date(visit.returnDate).toLocaleString()}</p>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-700 mb-4">
+                        <p>✔ Student safely returned to hostel</p>
+                        <p>⛨ Medical visit completed</p>
+                        <p>🏠︎ Back in room ${visit.room}</p>
+                        <p>〽 Hospital visit record updated</p>
+                    </div>
+                    <button onclick="this.closest('.modal').remove()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        Noted
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function addHospitalVisit() {
+            showAddVisitModal();
+        }
+
+        function showAddVisitModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">⛨ Add Hospital Visit</h3>
+                        <button onclick="closeAddVisitModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    
+                    <form onsubmit="submitHospitalVisit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Student *</label>
+                            <select id="visitStudentSelect" onchange="handleStudentSelection()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Choose a student</option>
+                                ${students.map(student => `
+                                    <option value="${student.id}">${student.name} - Room ${student.room} (${student.rollNo})</option>
+                                `).join('')}
+                                <option value="manual">+ Add New Student Manually</option>
+                            </select>
+                        </div>
+                        
+                        <div id="manualStudentEntry" class="hidden space-y-4">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-medium text-blue-800 mb-3">Manual Student Entry</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Student Name *</label>
+                                        <input type="text" id="manualStudentName" placeholder="Enter full name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Room Number *</label>
+                                        <input type="text" id="manualStudentRoom" placeholder="e.g., 205" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                                        <input type="text" id="manualStudentRoll" placeholder="e.g., CS001" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                                        <input type="tel" id="manualStudentContact" placeholder="Phone number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Visit *</label>
+                            <select id="visitReason" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select reason</option>
+                                <option value="Fever">Fever</option>
+                                <option value="Stomach Pain">Stomach Pain</option>
+                                <option value="Headache">Headache</option>
+                                <option value="Injury">Injury</option>
+                                <option value="Regular Checkup">Regular Checkup</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div id="customReasonDiv" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Specify Reason</label>
+                            <input type="text" id="customReason" placeholder="Enter specific reason" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                            <select id="visitPriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="normal">Normal</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                            <textarea id="visitNotes" rows="3" placeholder="Enter any additional notes or symptoms..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                        </div>
+                        
+                        <div class="flex space-x-3 pt-4">
+                            <button type="button" onclick="closeAddVisitModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 px-4 rounded-lg transition-colors font-medium">
+                                Cancel
+                            </button>
+                            <button type="button" onclick="triggerEmergencyAlert()" class="bg-red-700 hover:bg-red-800 text-white py-3 px-4 rounded-lg transition-colors font-medium border-2 border-red-600">
+                                 EMERGENCY
+                            </button>
+                            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium">
+                                 Send to Hospital
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Handle custom reason visibility
+            document.getElementById('visitReason').addEventListener('change', function () {
+                const customDiv = document.getElementById('customReasonDiv');
+                if (this.value === 'Other') {
+                    customDiv.classList.remove('hidden');
+                    document.getElementById('customReason').required = true;
+                } else {
+                    customDiv.classList.add('hidden');
+                    document.getElementById('customReason').required = false;
+                }
+            });
+        }
+
+        function closeAddVisitModal() {
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function handleStudentSelection() {
+            const selection = document.getElementById('visitStudentSelect').value;
+            const manualEntry = document.getElementById('manualStudentEntry');
+
+            if (selection === 'manual') {
+                manualEntry.classList.remove('hidden');
+            } else {
+                manualEntry.classList.add('hidden');
+                // Clear manual entry fields
+                document.getElementById('manualStudentName').value = '';
+                document.getElementById('manualStudentRoom').value = '';
+                document.getElementById('manualStudentRoll').value = '';
+                document.getElementById('manualStudentContact').value = '';
+            }
+        }
+
+        function triggerEmergencyAlert() {
+            const studentSelect = document.getElementById('visitStudentSelect').value;
+            let studentInfo = '';
+
+            if (studentSelect === 'manual') {
+                const name = document.getElementById('manualStudentName').value;
+                const room = document.getElementById('manualStudentRoom').value;
+                if (!name || !room) {
+                    showPopup('error', 'Please enter student name and room number for emergency alert');
+                    return;
+                }
+                studentInfo = `${name} - Room ${room}`;
+            } else if (studentSelect) {
+                const student = students.find(s => s.id == studentSelect);
+                studentInfo = `${student.name} - Room ${student.room}`;
+            } else {
+                showPopup('error', 'Please select or enter student information for emergency alert');
+                return;
+            }
+
+            showEmergencyAlert(studentInfo);
+        }
+
+        function showEmergencyAlert(studentInfo) {
+            const modal = document.getElementById('emergencyModal');
+            const details = document.getElementById('emergencyDetails');
+
+            // Add emergency flash effect to body
+            document.body.classList.add('emergency-flash');
+
+            details.innerHTML = `
+                <div class="text-center">
+                    <h3 class="font-bold text-red-700 text-lg mb-2">MEDICAL EMERGENCY</h3>
+                    <p class="text-gray-800 mb-2"><strong>Student:</strong> ${studentInfo}</p>
+                    <p class="text-gray-800 mb-2"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+                    <p class="text-gray-800 mb-4"><strong>Status:</strong> Immediate medical attention required</p>
+                    <div class="bg-red-100 border border-red-300 rounded p-3">
+                        <p class="text-red-800 font-medium">⚠︎ Emergency protocols activated</p>
+                        <p class="text-red-700 text-sm mt-1">Ambulance should be called immediately</p>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            addNotification('error', 'EMERGENCY ALERT', `Medical emergency for ${studentInfo}`);
+        }
+
+        function acknowledgeEmergency() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.add('hidden');
+
+            // Remove emergency flash effect
+            document.body.classList.remove('emergency-flash');
+
+            // Close the add visit modal as well
+            closeAddVisitModal();
+
+            showPopup('success', 'Emergency acknowledged! Actions taken: Emergency services notified, Medical team alerted, Incident logged, Parents/guardians will be contacted');
+            addNotification('success', 'Emergency Handled', 'Emergency response protocols completed');
+        }
+
+        function closeEmergencyAlert() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.add('hidden');
+            document.body.classList.remove('emergency-flash');
+        }
+
+        function submitHospitalVisit(event) {
+            event.preventDefault();
+
+            const studentId = document.getElementById('visitStudentSelect').value;
+            const reason = document.getElementById('visitReason').value;
+            const customReason = document.getElementById('customReason').value;
+            const priority = document.getElementById('visitPriority').value;
+            const notes = document.getElementById('visitNotes').value;
+
+            let student;
+            let isManualEntry = false;
+
+            if (studentId === 'manual') {
+                // Handle manual student entry
+                const name = document.getElementById('manualStudentName').value;
+                const room = document.getElementById('manualStudentRoom').value;
+                const rollNo = document.getElementById('manualStudentRoll').value;
+                const contact = document.getElementById('manualStudentContact').value;
+
+                if (!name || !room) {
+                    showPopup('error', 'Please enter at least student name and room number');
+                    return;
+                }
+
+                student = {
+                    id: 'manual_' + Date.now(),
+                    name: name,
+                    room: room,
+                    rollNo: rollNo || 'N/A',
+                    contact: contact || 'N/A'
+                };
+                isManualEntry = true;
+            } else {
+                student = students.find(s => s.id == studentId);
+                if (!student) {
+                    showPopup('error', 'Please select a valid student');
+                    return;
+                }
+            }
+
+            // Check if student is already at hospital (only for existing students)
+            if (!isManualEntry) {
+                const existingVisit = hospitalVisits.find(v => v.student === student.name && v.status === 'active');
+                if (existingVisit) {
+                    showPopup('warning', 'This student is already at the hospital!');
+                    return;
+                }
+            }
+
+            const finalReason = reason === 'Other' ? customReason : reason;
+            const priorityNote = priority !== 'normal' ? ` (${priority.toUpperCase()})` : '';
+
+            const newVisit = {
+                id: hospitalVisits.length + 1,
+                student: student.name,
+                room: student.room,
+                reason: finalReason,
+                status: 'active',
+                visitDate: new Date().toISOString(),
+                returnDate: null,
+                notes: notes || `${finalReason}${priorityNote} - ${isManualEntry ? 'Manual entry by warden' : 'Added by warden'}`,
+                priority: priority,
+                isManualEntry: isManualEntry,
+                contact: student.contact || 'N/A',
+                rollNo: student.rollNo || 'N/A'
+            };
+
+            // If manual entry, also add to students list for future reference
+            if (isManualEntry) {
+                students.push(student);
+            }
+
+            hospitalVisits.unshift(newVisit); // Add to beginning of array
+            closeAddVisitModal();
+            filterHospitalVisits();
+
+            // Update dashboard stats
+            document.getElementById('hospitalVisits').textContent = hospitalVisits.filter(v => v.status === 'active').length;
+
+            const entryType = isManualEntry ? ' (manually added student)' : '';
+            showPopup('success', `${student.name} has been sent to hospital for ${finalReason}${priorityNote}${entryType}`);
+            addNotification('info', 'Hospital Visit Added', `${student.name} sent to hospital for ${finalReason}`);
+
+            // Show detailed hospital visit popup
+            setTimeout(() => {
+                showHospitalVisitConfirmation(newVisit);
+            }, 500);
+        }
+
+        function showHospitalVisitConfirmation(visit) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-l-4 border-blue-500">
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2">⛨</div>
+                        <h3 class="text-xl font-bold text-blue-700">Hospital Visit Logged</h3>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-gray-800">${visit.student}</p>
+                        <p class="text-sm text-gray-600">Room ${visit.room}</p>
+                        <p class="text-sm text-blue-700 mt-2">Reason: ${visit.reason}</p>
+                        <p class="text-xs text-gray-500 mt-1">Visit Time: ${new Date(visit.visitDate).toLocaleString()}</p>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-700 mb-4">
+                        <p>⛨ Student sent to hospital</p>
+                        <p>𓂃🖊 Visit logged in system</p>
+                        <p>☤ Medical staff notified</p>
+                        <p>⚠︎ Emergency contacts informed</p>
+                        <p>⏱ Return status will be tracked</p>
+                    </div>
+                    <button onclick="this.closest('.modal').remove()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        Understood
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Absent notification function
+        function showAbsentNotification(student) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 border-l-4 border-red-500">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-4">⚠</div>
+                        <h2 class="text-xl font-bold text-red-600 mb-2">Student Marked Absent</h2>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-left">
+                            <p class="font-semibold text-gray-800">${student.name}</p>
+                            <p class="text-sm text-gray-600">Room ${student.room} • ${student.rollNo}</p>
+                            <p class="text-sm text-red-600 font-medium">${student.hostel} Hostel</p>
+                            <p class="text-xs text-gray-500 mt-2">Marked absent on ${new Date().toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <h3 class="font-semibold text-gray-800">Recommended Actions:</h3>
+                        <div class="space-y-2 text-sm text-gray-700">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-blue-500">☎</span>
+                                <span>Contact student immediately</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-green-500">𖨆</span>
+                                <span>Check with roommates/friends</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-yellow-500">𓂃✍︎</span>
+                                <span>Log absence reason if known</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-red-500">🕭</span>
+                                <span>Report if unreachable for 24+ hours</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="contactStudent('${student.name}', '${student.room}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium">
+                           ☎ Contact Student
+                        </button>
+                        <button onclick="closeAbsentNotification()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 px-4 rounded-lg transition-colors font-medium">
+                            Got It
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Auto-close after 10 seconds if not manually closed
+            setTimeout(() => {
+                if (document.body.contains(modal)) {
+                    modal.remove();
+                }
+            }, 10000);
+        }
+
+        function closeAbsentNotification() {
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function contactStudent(studentName, roomNumber) {
+            closeAbsentNotification();
+            showPopup('info', `Contacting ${studentName} in Room ${roomNumber}... Actions logged: Absence notification sent, Contact attempt recorded, Follow-up scheduled if no response`);
+            addNotification('info', 'Student Contact', `Contact attempt made for ${studentName}`);
+        }
+
+        // Utility functions
+
+        function quickEmergencyAlert() {
+            const studentName = prompt('Enter student name for emergency:');
+            const roomNumber = prompt('Enter room number:');
+
+            if (studentName && roomNumber) {
+                showEmergencyAlert(`${studentName} - Room ${roomNumber}`);
+            }
+        }
+
+        function generateReport() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal';
+
+            // Calculate statistics
+            const totalStudents = students.length;
+            const activeHospitalVisits = hospitalVisits.filter(v => v.status === 'active').length;
+            const returnedHospitalVisits = hospitalVisits.filter(v => v.status === 'returned').length;
+            const pendingComplaints = complaints.filter(c => c.status === 'pending').length;
+            const inProgressComplaints = complaints.filter(c => c.status === 'in-progress').length;
+            const resolvedComplaints = complaints.filter(c => c.status === 'resolved').length;
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-2"> 〽</div>
+                        <h2 class="text-2xl font-bold text-gray-800">Hostel Management Report</h2>
+                        <p class="text-gray-600">Generated on ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <!-- Student Statistics -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h3 class="font-bold text-blue-800 mb-3 flex items-center">
+                                <span class="mr-2">𖨆</span>
+                                Student Statistics
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <p>Total Students: <span class="font-semibold">${totalStudents}</span></p>
+                                <p>Boys Hostels: <span class="font-semibold">${students.filter(s => s.hostelType === 'boys').length}</span></p>
+                                <p>Girls Hostels: <span class="font-semibold">${students.filter(s => s.hostelType === 'girls').length}</span></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Hospital Visits -->
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h3 class="font-bold text-red-800 mb-3 flex items-center">
+                                <span class="mr-2">⛨</span>
+                                Hospital Visits
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <p>Currently at Hospital: <span class="font-semibold text-red-600">${activeHospitalVisits}</span></p>
+                                <p>Returned: <span class="font-semibold text-green-600">${returnedHospitalVisits}</span></p>
+                                <p>Total Visits: <span class="font-semibold">${hospitalVisits.length}</span></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Complaints Status -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="font-bold text-yellow-800 mb-3 flex items-center">
+                                <span class="mr-2">✍︎</span>
+                                Complaints Status
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <p>Pending: <span class="font-semibold text-red-600">${pendingComplaints}</span></p>
+                                <p>In Progress: <span class="font-semibold text-yellow-600">${inProgressComplaints}</span></p>
+                                <p>Resolved: <span class="font-semibold text-green-600">${resolvedComplaints}</span></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Attendance Summary -->
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h3 class="font-bold text-green-800 mb-3 flex items-center">
+                                <span class="mr-2">☑</span>
+                                Today's Attendance
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <p>Present: <span class="font-semibold text-green-600">${Object.values(attendance[new Date().toISOString().split('T')[0]] || {}).filter(status => status === 'present').length}</span></p>
+                                <p>Absent: <span class="font-semibold text-red-600">${Object.values(attendance[new Date().toISOString().split('T')[0]] || {}).filter(status => status === 'absent').length}</span></p>
+                                <p>Not Marked: <span class="font-semibold text-gray-600">${totalStudents - Object.keys(attendance[new Date().toISOString().split('T')[0]] || {}).length}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activities -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                        <h3 class="font-bold text-gray-800 mb-3">〽 Recent Activities</h3>
+                        <div class="space-y-2 text-sm text-gray-700">
+                            <p>• ${hospitalVisits.length} hospital visits recorded</p>
+                            <p>• ${complaints.length} complaints submitted</p>
+                            <p>• ${resolvedComplaints} complaints resolved</p>
+                            <p>• Daily attendance tracking active</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500 mb-4">This report provides a comprehensive overview of hostel management activities</p>
+                        <button onclick="this.closest('.modal').remove()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition-colors font-medium">
+                            Close Report
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            showPopup('success', 'Comprehensive hostel report generated successfully!');
+            addNotification('info', 'Report Generated', 'Hostel management report created');
+        }
+
+        function loadProfile() {
+            const savedProfile = localStorage.getItem('wardenProfile');
+            if (savedProfile) {
+                const profile = JSON.parse(savedProfile);
+                document.getElementById('wardenName').value = profile.name || '';
+                document.getElementById('employeeId').value = profile.employeeId || '';
+                document.getElementById('contactNumber').value = profile.contact || '';
+                document.getElementById('hostelType').value = profile.hostelType || '';
+
+                if (profile.hostelType) {
+                    updateHostelOptions();
+                    document.getElementById('assignedHostel').value = profile.assignedHostel || '';
+                }
+
+                if (profile.profilePic && profile.profilePic !== document.getElementById('profilePic').src) {
+                    document.getElementById('profilePic').src = profile.profilePic;
+                    document.getElementById('navProfilePic').src = profile.profilePic;
+                }
+
+                if (profile.name) {
+                    document.getElementById('navWardenName').textContent = profile.name;
+                }
+
+                if (profile.hostelType && profile.assignedHostel) {
+                    updateDashboard();
+                }
+            }
+        }
+
+        // Quick attendance function for dashboard
+        function quickAttendanceByHostel(hostelType, hostelName) {
+            // Switch to attendance section
+            showSection('attendance');
+
+            // Set the filters
+            document.getElementById('attendanceHostelType').value = hostelName === 'all' ? hostelType : hostelType;
+            updateAttendanceHostelOptions();
+
+            if (hostelName !== 'all') {
+                document.getElementById('attendanceSpecificHostel').value = hostelName;
+            }
+
+            // Apply the filter
+            filterAttendanceByHostel();
+
+            // Show confirmation message
+            const hostelText = hostelName === 'all' ? `all ${hostelType} hostels` : `${hostelName} hostel`;
+            setTimeout(() => {
+                showPopup('info', `Showing attendance for ${hostelText}. You can now mark attendance for these students.`);
+            }, 500);
+        }
+
+        // Initialize application
+        window.addEventListener('load', function () {
+            initializeData();
+            loadProfile();
+            updateNotificationBadge();
+
+            // Load saved attendance
+            const savedAttendance = localStorage.getItem('attendance');
+            if (savedAttendance) {
+                attendance = JSON.parse(savedAttendance);
+            }
+
+            // Show profile section by default
+            showSection('profile');
+        });
+
+
+        // // three dot
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("-translate-x-full");
+        }
+
+        // timer to logout (milliseconds में)
+        const INACTIVITY_LIMIT = 1 * 60 * 1000; // 5 minutes
+
+        let inactivityTimer;
+
+        // logout function
+        function logout() {
+            localStorage.removeItem("loggedInUser"); // session removed
+            alert("Session expired due to inactivity.");
+            window.location.href = "hams_first.html"; // login page  redirect
+        }
+
+        // reset inactivity timer
+        function resetTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(logout, INACTIVITY_LIMIT);
+        }
+
+        // जब भी user कुछ activity करे तो reset हो जाए
+        window.onload = resetTimer;
+        document.onmousemove = resetTimer;
+        document.onkeydown = resetTimer;
+        document.onclick = resetTimer;
+        document.onscroll = resetTimer;
+
+
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'978e730630cc54f2',t:'MTc1NjgzMTIyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>

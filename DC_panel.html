@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .card-3d:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3c72);
+
+
+        }
+
+        .stats-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
+        }
+
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        .chart-container {
+            background: conic-gradient(from 0deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe, #667eea);
+            border-radius: 50%;
+            padding: 4px;
+        }
+
+        .chart-inner {
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #total_student {
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            ;
+        }
+
+        #ironModal {
+            margin-left: -760px;
+            margin-top: -500px;
+        }
+
+        #borrowFormModal {
+            margin-left: -216px;
+            margin-top: -265px;
+        }
+
+        #iron_button {
+            max-width: 680px;
+
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen">
+
+
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+
+
+        <!-- Logout Button -->
+        <div class="text-center mb-8 relative">
+            <h1 class="text-4xl font-bold text-white mb-2">DC Management Dashboard</h1>
+            <p class="text-white/80">Complete Hostel Management System</p>
+
+            <!-- Small Logout Button (top-right corner) -->
+            <button onclick="logout()" class="absolute top-0 right-0 mt-2 mr-4 bg-red-600 text-white px-3 py-1 rounded-md 
+               text-sm font-medium hover:bg-red-700 transition-colors flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h6a1 1 0 010 2H5v10h5a1 1 0 010 2H4a1 1 0 01-1-1V4zm11.293 4.293a1 1 0 
+                010 1.414L13.414 11H9a1 1 0 110-2h4.414l.879.879a1 1 0 
+                001.414-1.414l-2.707-2.707z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Logout</span>
+            </button>
+        </div>
+
+
+        <!-- DC Profile Section -->
+        <div class="glass-effect rounded-2xl p-6 mb-8 card-3d">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="relative">
+                    <div class="w-32 h-32 rounded-full flex items-center justify-center pulse-glow border-2 border-gray-300"
+                        id="profilePicContainer">
+
+                        <!-- Default Logo -->
+                        <img id="defaultAvatar" src="logo_profile.png" alt="Default Logo"
+                            class="w-28 h-28 object-contain rounded-full">
+
+                        <!-- Uploaded Profile Picture -->
+                        <img id="profilePic" src="" alt="Profile Picture"
+                            class="w-full h-full object-cover rounded-full hidden">
+                    </div>
+
+
+                    <button onclick="openProfilePicModal()"
+                        class="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
+
+                    </button>
+                    <input type="file" id="profilePicInput" accept="image/*" class="hidden"
+                        onchange="handleProfilePicUpload(event)">
+                </div>
+                <div class="flex-1 text-white">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">DC Name</label>
+                            <input type="text" id="dcName" value=""
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60"
+                                placeholder="Enter DC Name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Employee ID</label>
+                            <input type="text" id="dcId" value=""
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60"
+                                placeholder="Enter Employee ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Contact Number</label>
+                            <input type="tel" id="dcContact" value=""
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60"
+                                placeholder="Enter Contact">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Assigned Hostel</label>
+                            <select id="hostelType" onchange="updateHostelOptions()"
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white">
+                                <option value="" class="text-black">Select Hostel Type</option>
+                                <option value="girls" class="text-black"> Girls Hostel</option>
+                                <option value="boys" class="text-black"> Boys Hostel</option>
+                            </select>
+                        </div>
+                        <div id="specificHostelDiv" class="hidden">
+                            <label class="block text-sm font-medium mb-2">Specific Hostel</label>
+                            <select id="specificHostel" onchange="updateFloorOptions()"
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white">
+                                <option value="" class="text-black">Select Specific Hostel</option>
+                            </select>
+                        </div>
+                        <div id="floorDiv" class="hidden">
+                            <label class="block text-sm font-medium mb-2">Floor Assignment</label>
+                            <select id="floorSelect" onchange="updateDCOptions()"
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white">
+                                <option value="" class="text-black">Select Floor</option>
+                            </select>
+                        </div>
+                        <div id="dcAssignmentDiv" class="hidden">
+                            <label class="block text-sm font-medium mb-2">DC Name</label>
+                            <select id="dcAssignment"
+                                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white">
+                                <option value="" class="text-black">Select DC Name</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="updateDCInfo()"
+                        class="mt-4 bg-white text-black px-6 py-2 rounded-lg font-semibold hover:bg-white/90 transition-colors">
+                        Update Information
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div id="total_student" class="stats-card rounded-2xl p-6 card-3d">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="totalStudents">245</h3>
+                        <p class="text-gray-600">Total Students</p>
+                    </div>
+                    <div class="w-16 h-16 border-2 border-black rounded-full flex items-center justify-center">
+                        <div class="chart-inner w-full h-full flex items-center justify-center">
+                            <img src="total_student.png" alt="Total Students" class="w-10 h-10 object-contain">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="total_student" class="stats-card rounded-2xl p-6 card-3d">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="presentToday">198</h3>
+                        <p class="text-gray-600">Present Today</p>
+                    </div>
+                    <div class="w-16 h-16 border-2 border-black rounded-full flex items-center justify-center">
+                        <div class="chart-inner w-full h-full flex items-center justify-center">
+                            <img src="total_present-removebg-preview.png" alt="Total Students"
+                                class="w-10 h-10 object-contain">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="total_student" class="stats-card rounded-2xl p-6 card-3d">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="ironsBorrowed">12</h3>
+                        <p class="text-gray-600">Irons Borrowed</p>
+                    </div>
+
+
+                    <div class="w-16 h-16 border-2 border-black rounded-full flex items-center justify-center">
+                        <div class="chart-inner w-full h-full flex items-center justify-center">
+                            <img src="iron_img.png" alt="Total Students" class="w-25 h-25 object-contain">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Manual Attendance Modal -->
+        <div id="attendanceModal" class="hidden fixed inset-0 bg-black bg-opacity-60 items-center justify-center z-50">
+            <div class="bg-white text-gray-800 rounded-lg shadow-xl p-6 w-[500px]">
+                <h2 class="text-xl font-bold mb-4">Manual Attendance</h2>
+
+                <form id="attendanceForm" class="space-y-3 max-h-80 overflow-y-auto"></form>
+
+                <div class="mt-4 text-center">
+                    <p class="font-semibold">Total Present: <span id="presentCount">0</span></p>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <button onclick="closeModal('attendanceModal')" type="button"
+                        class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button type="button" onclick="submitAttendance()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Features Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Attendance Management -->
+            <div class="glass-effect rounded-2xl p-6 card-3d">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    Attendance Management
+                </h2>
+                <div class="space-y-4">
+                    <!-- Manual Attendance Button -->
+                    <button onclick="openAttendance()"
+                        class="w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 hover:scale-105 transition-transform flex items-center gap-3">
+                        Manual Attendance
+                    </button>
+
+
+                    <a href="update_camera_student.html"
+                        class="w-full bg-purple-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-600 hover:scale-105 transition-transform flex items-center gap-3">
+                        Face Recognition</a>
+
+                    <a href=""
+                        class="w-full bg-yellow-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-yellow-600 hover:scale-105 transition-transform flex items-center gap-3">
+                        QR Code Attendance (Coming Soon) </a>
+
+
+
+                </div>
+            </div>
+
+
+
+
+            <!-- Student Services -->
+            <div class="glass-effect rounded-2xl p-6 card-3d">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    Student Services
+                </h2>
+                <div class="space-y-4">
+                    <button onclick="openComplaints()"
+                        class="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 hover:scale-105 transition-transform flex items-center gap-3">
+                        Student Complaints
+                        <span class="bg-white text-red-500 px-2 py-1 rounded-full text-sm ml-auto"
+                            id="complaintCount">3</span>
+                    </button>
+                    <!-- Borrow Iron Button -->
+                    <button onclick="openIronBorrow()" id="iron_button"
+                        class="w-full max-w-sm bg-yellow-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-yellow-600 hover:scale-105 transition-transform flex items-center gap-3">
+                        Iron Borrowing System
+                        <span class="bg-white text-orange-500 px-2 py-1 rounded-full text-sm ml-auto"
+                            id="ironAvailable">17</span>
+                    </button>
+
+                    <!-- Main Modal -->
+                    <div id="ironModal" class="hidden fixed inset-0  flex items-center justify-center z-50">
+                        <div class="bg-gray-800 text-white rounded-xl shadow-xl p-6 w-[480px]">
+                            <h2 class="text-2xl font-bold mb-4 text-center">Iron Borrowing System</h2>
+
+                            <!-- Available irons -->
+                            <div class="bg-gray-700 p-4 rounded-lg mb-4">
+                                <p class="mb-2 font-semibold">Available Irons:
+                                    <span id="ironCount" class="text-green-400">17/20</span>
+                                </p>
+                                <div id="ironGrid" class="grid grid-cols-5 gap-2"></div>
+                                <p class="text-xs text-gray-400 mt-2">Green: Available | Red: Borrowed</p>
+                            </div>
+
+                            <!-- Recent borrowings -->
+                            <div class="bg-gray-700 p-4 rounded-lg mb-4">
+                                <p class="mb-2 font-semibold">Current Borrowings</p>
+                                <ul id="recentBorrowings" class="text-sm space-y-1"></ul>
+                            </div>
+
+                            <!-- Close button -->
+                            <div class="text-center">
+                                <button onclick="closeIronBorrow()"
+                                    class="bg-red-500 hover:bg-red-600 px-6 py-2 rounded-lg font-semibold">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Borrow Form Modal -->
+                    <div id="borrowFormModal" class="hidden fixed inset-0 z-50 items-center justify-center">
+                        <div class="bg-white text-gray-800 rounded-lg shadow-xl p-6 w-[400px]">
+                            <h2 class="text-xl font-bold mb-4">Borrow Iron</h2>
+                            <form id="borrowForm" class="space-y-3">
+                                <input type="hidden" id="selectedIronId">
+                                <div>
+                                    <label class="block text-sm font-medium">Student Name</label>
+                                    <input type="text" id="studentName" class="w-full border rounded-lg px-3 py-2"
+                                        required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium">Room Number</label>
+                                    <input type="text" id="roomNumber" class="w-full border rounded-lg px-3 py-2"
+                                        required>
+                                </div>
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" onclick="closeBorrowForm()"
+                                        class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-green-600 text-white rounded-lg">Confirm</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <!-- Modals -->
+        <!-- Attendance Modal -->
+        <div id="attendanceModal"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-effect rounded-2xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold text-white mb-6" id="attendanceTitle">Manual Attendance</h3>
+                <div id="attendanceContent">
+                    <!-- Content will be dynamically loaded -->
+                </div>
+                <button onclick="closeModal('attendanceModal')"
+                    class="mt-6 w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Complaints Modal -->
+        <div id="complaintsModal"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-effect rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                <h3 class="text-2xl font-bold text-white mb-6">Student Complaints</h3>
+                <div class="space-y-4 mb-6">
+                    <div class="bg-white/20 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold text-white">Room 205 - AC Not Working</h4>
+                            <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">High</span>
+                        </div>
+                        <p class="text-white/80 text-sm">Submitted by: Sarah Johnson | Room 205</p>
+                        <p class="text-white/70 text-sm mt-1">The air conditioning unit has been making loud noises
+                            and
+                            not
+                            cooling properly.</p>
+                    </div>
+                    <div class="bg-white/20 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold text-white">Mess Food Quality</h4>
+                            <span class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Medium</span>
+                        </div>
+                        <p class="text-white/80 text-sm">Submitted by: Mike Chen | Room 312</p>
+                        <p class="text-white/70 text-sm mt-1">Food quality has decreased in the past week. Please
+                            check
+                            with
+                            kitchen staff.</p>
+                    </div>
+                    <div class="bg-white/20 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold text-white">WiFi Connection Issues</h4>
+                            <span class="bg-green-500 text-white px-2 py-1 rounded text-sm">Low</span>
+                        </div>
+                        <p class="text-white/80 text-sm">Submitted by: Emma Davis | Room 108</p>
+                        <p class="text-white/70 text-sm mt-1">Internet connection is unstable in the evening hours.
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeModal('complaintsModal')"
+                    class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Iron Borrow Modal -->
+        <div id="ironModal" class="hidden fixed inset-0 bg-black bg-opacity-60 items-center justify-center z-50">
+            <div class="bg-gray-800 text-white rounded-xl shadow-xl p-6 w-[480px]">
+                <h3 class="text-2xl font-bold text-white mb-6">Iron Borrowing System</h3>
+                <div class="space-y-4">
+                    <div class="bg-white/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-white mb-2">Available Irons: <span
+                                class="text-green-400">8/20</span>
+                        </h4>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="bg-green-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                1
+                            </div>
+                            <div class="bg-green-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                2
+                            </div>
+                            <div class="bg-red-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                3
+                            </div>
+                            <div class="bg-green-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                4
+                            </div>
+                            <div class="bg-red-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                5
+                            </div>
+                            <div class="bg-green-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                6
+                            </div>
+                            <div class="bg-red-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                7
+                            </div>
+                            <div class="bg-green-500 h-8 rounded flex items-center justify-center text-white text-sm">
+                                8
+                            </div>
+                        </div>
+                        <p class="text-white/70 text-sm mt-2">Green: Available | Red: Borrowed</p>
+                    </div>
+                    <div class="bg-white/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-white mb-2">Recent Borrowings</h4>
+                        <div class="space-y-2 text-sm text-white/80">
+                            <div>Iron #3 - John Doe (Room 201) - 2 hours ago</div>
+                            <div>Iron #5 - Jane Smith (Room 305) - 4 hours ago</div>
+                            <div>Iron #7 - Bob Wilson (Room 102) - 6 hours ago</div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="closeModal('ironModal')"
+                    class="mt-6 w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Profile Picture Modal -->
+        <div id="profilePicModal"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-effect rounded-2xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold text-white mb-6"> Profile Picture Management</h3>
+
+                <!-- Current Picture Preview -->
+                <div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-300"
+                    id="previewContainer">
+                    <!-- Logo as default avatar -->
+                    <img id="previewPic" src="" alt="Preview" class="w-full h-full object-cover rounded-full hidden">
+                    <img id="previewAvatar" src="logo_profile.png" alt="Default Logo" class="w-49 h-49 object-contain">
+                </div>
+                <p class="text-white/80 text-sm mt-2">Current Profile Picture</p>
+
+
+                <!-- Upload Section -->
+                <div class="space-y-4">
+                    <div class="border-2 border-dashed border-white/30 rounded-lg p-6 text-center">
+                        <div class="text-4xl mb-2">📁</div>
+                        <p class="text-white/80 mb-4">Upload a new profile picture</p>
+                        <button onclick="triggerFileUpload()"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            Choose File
+                        </button>
+                        <p class="text-white/60 text-xs mt-2">Supported: JPG, PNG, GIF (Max: 5MB)</p>
+                    </div>
+
+                    <!-- Validation Messages -->
+                    <div id="validationMessage" class="hidden p-3 rounded-lg text-sm"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button onclick="saveProfilePic()" id="saveBtn"
+                            class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+                            disabled>
+                            Save
+                        </button>
+                        <button onclick="removeProfilePic()" id="removeBtn"
+                            class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="closeModal('profilePicModal')"
+                    class="mt-6 w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <script>
+            let currentProfilePic = null;
+            let pendingProfilePic = null;
+
+            function logout() {
+                // Redirect to login page
+                window.location.href = "hams_first.html";
+            }
+
+
+            function updateDCInfo() {
+                // ✅ Example: You can also save data here if needed
+                alert("DC Information Updated Successfully!");
+
+                // ✅ Clear all input fields
+                document.getElementById("dcName").value = "";
+                document.getElementById("dcId").value = "";
+                document.getElementById("dcContact").value = "";
+                document.getElementById("hostelType").value = "";
+                document.getElementById("specificHostel").value = "";
+                document.getElementById("floorSelect").value = "";
+                document.getElementById("dcAssignment").value = "";
+
+                // ✅ Hide conditional divs again
+                document.getElementById("specificHostelDiv").classList.add("hidden");
+                document.getElementById("floorDiv").classList.add("hidden");
+                document.getElementById("dcAssignmentDiv").classList.add("hidden");
+
+                // ✅ Reset profile picture if uploaded
+                document.getElementById("profilePic").classList.add("hidden");
+                document.getElementById("defaultAvatar").classList.remove("hidden");
+            }
+
+
+
+
+            function openProfilePicModal() {
+                const modal = document.getElementById('profilePicModal');
+                const previewPic = document.getElementById('previewPic');
+                const previewAvatar = document.getElementById('previewAvatar');
+
+                // Show current profile picture in preview
+                if (currentProfilePic) {
+                    previewPic.src = currentProfilePic;
+                    previewPic.classList.remove('hidden');
+                    previewAvatar.classList.add('hidden');
+                } else {
+                    previewPic.classList.add('hidden');
+                    previewAvatar.classList.remove('hidden');
+                }
+
+                // Reset validation message
+                hideValidationMessage();
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function triggerFileUpload() {
+                document.getElementById('profilePicInput').click();
+            }
+
+            function handleProfilePicUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Validate file
+                const validation = validateProfilePic(file);
+                if (!validation.isValid) {
+                    showValidationMessage(validation.message, 'error');
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    pendingProfilePic = e.target.result;
+
+                    const previewPic = document.getElementById('previewPic');
+                    const previewAvatar = document.getElementById('previewAvatar');
+
+                    previewPic.src = pendingProfilePic;
+                    previewPic.classList.remove('hidden');
+                    previewAvatar.classList.add('hidden');
+
+                    // Enable save button
+                    document.getElementById('saveBtn').disabled = false;
+
+                    showValidationMessage('✅ Image loaded successfully! Click Save to apply.', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function validateProfilePic(file) {
+                // Check file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    return {
+                        isValid: false,
+                        message: '❌ Invalid file type. Please upload JPG, PNG, or GIF files only.'
+                    };
+                }
+
+                // Check file size (5MB limit)
+                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                if (file.size > maxSize) {
+                    return {
+                        isValid: false,
+                        message: '❌ File too large. Please upload an image smaller than 5MB.'
+                    };
+                }
+
+                return { isValid: true, message: '' };
+            }
+
+            function showValidationMessage(message, type) {
+                const messageDiv = document.getElementById('validationMessage');
+                messageDiv.textContent = message;
+                messageDiv.className = `p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-500/20 text-red-200 border border - red - 500 / 30' : 'bg - green - 500 / 20 text - green - 200 border border - green - 500 / 30'}`;
+                messageDiv.classList.remove('hidden');
+            }
+
+            function hideValidationMessage() {
+                document.getElementById('validationMessage').classList.add('hidden');
+            }
+
+            function saveProfilePic() {
+                if (!pendingProfilePic) {
+                    showValidationMessage('❌ No image selected to save.', 'error');
+                    return;
+                }
+
+                // Save the profile picture
+                currentProfilePic = pendingProfilePic;
+
+                // Update main profile picture
+                const mainProfilePic = document.getElementById('profilePic');
+                const mainAvatar = document.getElementById('defaultAvatar');
+
+                mainProfilePic.src = currentProfilePic;
+                mainProfilePic.classList.remove('hidden');
+                mainAvatar.classList.add('hidden');
+
+                // Store in localStorage for persistence
+                localStorage.setItem('dcProfilePic', currentProfilePic);
+
+                showValidationMessage('✅ Profile picture saved successfully!', 'success');
+
+                // Disable save button and reset pending
+                document.getElementById('saveBtn').disabled = true;
+                pendingProfilePic = null;
+
+                setTimeout(() => {
+                    closeModal('profilePicModal');
+                }, 1500);
+            }
+
+            function removeProfilePic() {
+                // Remove current profile picture
+                currentProfilePic = null;
+                pendingProfilePic = null;
+
+                // Update main profile picture
+                const mainProfilePic = document.getElementById('profilePic');
+                const mainAvatar = document.getElementById('defaultAvatar');
+
+                mainProfilePic.classList.add('hidden');
+                mainAvatar.classList.remove('hidden');
+
+                // Update preview
+                const previewPic = document.getElementById('previewPic');
+                const previewAvatar = document.getElementById('previewAvatar');
+
+                previewPic.classList.add('hidden');
+                previewAvatar.classList.remove('hidden');
+
+                // Remove from localStorage
+                localStorage.removeItem('dcProfilePic');
+
+                // Disable save button
+                document.getElementById('saveBtn').disabled = true;
+
+                showValidationMessage('✅ Profile picture removed successfully!', 'success');
+            }
+
+            // Load saved profile picture on page load
+            function loadSavedProfilePic() {
+                const savedPic = localStorage.getItem('dcProfilePic');
+                if (savedPic) {
+                    currentProfilePic = savedPic;
+                    const mainProfilePic = document.getElementById('profilePic');
+                    const mainAvatar = document.getElementById('defaultAvatar');
+
+                    mainProfilePic.src = currentProfilePic;
+                    mainProfilePic.classList.remove('hidden');
+                    mainAvatar.classList.add('hidden');
+                }
+            }
+
+            function updateHostelOptions() {
+                const hostelType = document.getElementById('hostelType').value;
+                const specificHostelDiv = document.getElementById('specificHostelDiv');
+                const specificHostel = document.getElementById('specificHostel');
+                const floorDiv = document.getElementById('floorDiv');
+                const dcAssignmentDiv = document.getElementById('dcAssignmentDiv');
+
+                // Hide subsequent dropdowns
+                floorDiv.classList.add('hidden');
+                dcAssignmentDiv.classList.add('hidden');
+
+                if (hostelType === '') {
+                    specificHostelDiv.classList.add('hidden');
+                    return;
+                }
+
+                specificHostelDiv.classList.remove('hidden');
+                specificHostel.innerHTML = '<option value="" class="text-black">Select Specific Hostel</option>';
+
+                if (hostelType === 'girls') {
+                    const girlsHostels = [
+                        { value: 'bhagirthi', name: ' Bhagirthi Hostel' },
+                        { value: 'narmada', name: ' Narmada Hostel' },
+                        { value: 'godavari', name: ' Godavari Hostel' },
+                        { value: 'kaveri', name: ' Kaveri Hostel' }
+                    ];
+
+                    girlsHostels.forEach(hostel => {
+                        const option = document.createElement('option');
+                        option.value = hostel.value;
+                        option.textContent = hostel.name;
+                        option.className = 'text-black';
+                        specificHostel.appendChild(option);
+                    });
+                } else if (hostelType === 'boys') {
+                    const boysHostels = [
+                        { value: 'himgiri', name: ' Himgiri Hostel' },
+                        { value: 'nilgiri', name: ' Nilgiri Hostel' },
+                        { value: 'aravali1', name: ' Aravali 1 Hostel' },
+                        { value: 'aravali2', name: ' Aravali 2 Hostel' },
+                        { value: 'shivalik', name: ' Shivalik Hostel' },
+                        { value: 'himalaya', name: ' Himalaya Hostel' }
+                    ];
+
+                    boysHostels.forEach(hostel => {
+                        const option = document.createElement('option');
+                        option.value = hostel.value;
+                        option.textContent = hostel.name;
+                        option.className = 'text-black';
+                        specificHostel.appendChild(option);
+                    });
+                }
+            }
+
+            function updateFloorOptions() {
+                const specificHostel = document.getElementById('specificHostel').value;
+                const floorDiv = document.getElementById('floorDiv');
+                const floorSelect = document.getElementById('floorSelect');
+                const dcAssignmentDiv = document.getElementById('dcAssignmentDiv');
+
+                // Hide DC assignment dropdown
+                dcAssignmentDiv.classList.add('hidden');
+
+                if (specificHostel === '') {
+                    floorDiv.classList.add('hidden');
+                    return;
+                }
+
+                floorDiv.classList.remove('hidden');
+                floorSelect.innerHTML = '<option value="" class="text-black">Select Floor</option>';
+
+                // Add floor options (same for all hostels)
+                const floors = [
+                    { value: 'ground', name: ' Ground Floor' },
+                    { value: 'first', name: 'First Floor' },
+                    { value: 'second', name: 'Second Floor' },
+                    { value: 'top', name: ' Top Floor' }
+                ];
+
+                floors.forEach(floor => {
+                    const option = document.createElement('option');
+                    option.value = floor.value;
+                    option.textContent = floor.name;
+                    option.className = 'text-black';
+                    floorSelect.appendChild(option);
+                });
+            }
+
+            function updateDCOptions() {
+                const hostelType = document.getElementById('hostelType').value;
+                const specificHostel = document.getElementById('specificHostel').value;
+                const floorSelect = document.getElementById('floorSelect').value;
+                const dcAssignmentDiv = document.getElementById('dcAssignmentDiv');
+                const dcAssignment = document.getElementById('dcAssignment');
+
+                if (floorSelect === '') {
+                    dcAssignmentDiv.classList.add('hidden');
+                    return;
+                }
+
+                dcAssignmentDiv.classList.remove('hidden');
+                dcAssignment.innerHTML = '<option value="" class="text-black">Select DC Name</option>';
+
+                // DC Names database for each hostel and floor
+                const dcNames = {
+                    // Girls Hostels
+                    'bhagirthi': {
+                        'ground': ['Priya Sharma - Ground Floor DC', 'Anjali Patel - Ground Floor DC', 'Meera Singh - Ground Floor DC'],
+                        'first': ['Kavya Reddy - First Floor DC', 'Sneha Gupta - First Floor DC', 'Riya Jain - First Floor DC'],
+                        'second': ['Pooja Agarwal - Second Floor DC', 'Nisha Kumar - Second Floor DC', 'Divya Mehta - Second Floor DC'],
+                        'top': ['Sakshi Verma - Top Floor DC', 'Aditi Rao - Top Floor DC', 'Shreya Pandey - Top Floor DC']
+                    },
+                    'narmada': {
+                        'ground': ['Sunita Devi - Ground Floor DC', 'Rekha Sharma - Ground Floor DC', 'Geeta Kumari - Ground Floor DC'],
+                        'first': ['Manisha Singh - First Floor DC', 'Deepika Joshi - First Floor DC', 'Swati Mishra - First Floor DC'],
+                        'second': ['Neha Agrawal - Second Floor DC', 'Ritika Bansal - Second Floor DC', 'Preeti Saxena - Second Floor DC'],
+                        'top': ['Shweta Tiwari - Top Floor DC', 'Kiran Bala - Top Floor DC', 'Sonia Kapoor - Top Floor DC']
+                    },
+                    'godavari': {
+                        'ground': ['Radha Krishna - Ground Floor DC', 'Lakshmi Devi - Ground Floor DC', 'Saraswati Sharma - Ground Floor DC'],
+                        'first': ['Durga Prasad - First Floor DC', 'Parvati Singh - First Floor DC', 'Ganga Devi - First Floor DC'],
+                        'second': ['Yamuna Rani - Second Floor DC', 'Narmada Bai - Second Floor DC', 'Kaveri Devi - Second Floor DC'],
+                        'top': ['Bhagirathi Sharma - Top Floor DC', 'Sindhu Kumari - Top Floor DC', 'Tapti Devi - Top Floor DC']
+                    },
+                    'kaveri': {
+                        'ground': ['Anita Desai - Ground Floor DC', 'Sushma Swaraj - Ground Floor DC', 'Indira Gandhi - Ground Floor DC'],
+                        'first': ['Kalpana Chawla - First Floor DC', 'Sunita Williams - First Floor DC', 'Pratibha Patil - First Floor DC'],
+                        'second': ['Mary Kom - Second Floor DC', 'Saina Nehwal - Second Floor DC', 'PV Sindhu - Second Floor DC'],
+                        'top': ['Lata Mangeshkar - Top Floor DC', 'Asha Bhosle - Top Floor DC', 'MS Subbulakshmi - Top Floor DC']
+                    },
+
+                    // Boys Hostels
+                    'himgiri': {
+                        'ground': ['Rajesh Kumar - Ground Floor DC', 'Suresh Patel - Ground Floor DC', 'Mahesh Singh - Ground Floor DC'],
+                        'first': ['Deependra Soni - First Floor DC', 'Monu Prakash - First Floor DC', 'Dinesh Jain - First Floor DC'],
+                        'second': ['Kulvant Chaudhary - Second Floor DC', 'Anshul - Second Floor DC', 'Umesh Mehta - Second Floor DC'],
+                        'top': ['Yogesh Verma - Top Floor DC', 'Hitesh Rao - Top Floor DC', 'Ritesh Pandey - Top Floor DC']
+                    },
+                    'nilgiri': {
+                        'ground': ['Arjun Singh - Ground Floor DC', 'Bheem Rao - Ground Floor DC', 'Nakul Sharma - Ground Floor DC'],
+                        'first': ['Yudhishthir Kumar - First Floor DC', 'Sahadev Patel - First Floor DC', 'Karna Gupta - First Floor DC'],
+                        'second': ['Krishna Murthy - Second Floor DC', 'Balram Singh - Second Floor DC', 'Sudama Joshi - Second Floor DC'],
+                        'top': ['Hanuman Das - Top Floor DC', 'Bharat Kumar - Top Floor DC', 'Lakshman Singh - Top Floor DC']
+                    },
+                    'aravali1': {
+                        'ground': ['Akbar Khan - Ground Floor DC', 'Birbal Sharma - Ground Floor DC', 'Tansen Kumar - Ground Floor DC'],
+                        'first': ['Chandragupta Singh - First Floor DC', 'Ashoka Maurya - First Floor DC', 'Harsha Vardhana - First Floor DC'],
+                        'second': ['Prithviraj Chauhan - Second Floor DC', 'Rana Pratap - Second Floor DC', 'Shivaji Maharaj - Second Floor DC'],
+                        'top': ['Tipu Sultan - Top Floor DC', 'Hyder Ali - Top Floor DC', 'Bahadur Shah - Top Floor DC']
+                    },
+                    'aravali2': {
+                        'ground': ['Abdul Kalam - Ground Floor DC', 'Homi Bhabha - Ground Floor DC', 'CV Raman - Ground Floor DC'],
+                        'first': ['Jagadish Bose - First Floor DC', 'Srinivasa Ramanujan - First Floor DC', 'Satyendra Nath - First Floor DC'],
+                        'second': ['Vikram Sarabhai - Second Floor DC', 'Satish Dhawan - Second Floor DC', 'Kiran Kumar - Second Floor DC'],
+                        'top': ['Narayan Murthy - Top Floor DC', 'Azim Premji - Top Floor DC', 'Ratan Tata - Top Floor DC']
+                    },
+                    'shivalik': {
+                        'ground': ['Sachin Tendulkar - Ground Floor DC', 'MS Dhoni - Ground Floor DC', 'Virat Kohli - Ground Floor DC'],
+                        'first': ['Kapil Dev - First Floor DC', 'Sunil Gavaskar - First Floor DC', 'Rahul Dravid - First Floor DC'],
+                        'second': ['Sourav Ganguly - Second Floor DC', 'VVS Laxman - Second Floor DC', 'Anil Kumble - Second Floor DC'],
+                        'top': ['Harbhajan Singh - Top Floor DC', 'Zaheer Khan - Top Floor DC', 'Yuvraj Singh - Top Floor DC']
+                    },
+                    'himalaya': {
+                        'ground': ['Shah Rukh Khan - Ground Floor DC', 'Aamir Khan - Ground Floor DC', 'Salman Khan - Ground Floor DC'],
+                        'first': ['Amitabh Bachchan - First Floor DC', 'Rajesh Khanna - First Floor DC', 'Dilip Kumar - First Floor DC'],
+                        'second': ['Dev Anand - Second Floor DC', 'Raj Kapoor - Second Floor DC', 'Shammi Kapoor - Second Floor DC'],
+                        'top': ['Rishi Kapoor - Top Floor DC', 'Dharmendra Singh - Top Floor DC', 'Jeetendra Kumar - Top Floor DC']
+                    }
+                }
+
+                // Get DC names for the selected hostel and floor
+                const hostelDCs = dcNames[specificHostel];
+                if (hostelDCs && hostelDCs[floorSelect]) {
+                    const floorDCs = hostelDCs[floorSelect];
+
+                    floorDCs.forEach((dcName, index) => {
+                        const option = document.createElement('option');
+                        option.value = `${specificHostel}_${floorSelect}_${index + 1}`;
+                        option.textContent = dcName;
+                        option.className = 'text-black';
+                        dcAssignment.appendChild(option);
+                    });
+                }
+            }
+
+            function updateDCInfo() {
+                const name = document.getElementById('dcName').value;
+                const id = document.getElementById('dcId').value;
+                const contact = document.getElementById('dcContact').value;
+                const hostelType = document.getElementById('hostelType').value;
+                const specificHostel = document.getElementById('specificHostel').value;
+                const floorSelect = document.getElementById('floorSelect').value;
+                const dcAssignment = document.getElementById('dcAssignment').value;
+
+                let assignmentInfo = '';
+                if (dcAssignment) {
+                    const dcAssignmentText = document.getElementById('dcAssignment').selectedOptions[0].textContent;
+                    assignmentInfo = `Assignment: ${dcAssignmentText}`;
+                } else if (floorSelect) {
+                    const floorText = document.getElementById('floorSelect').selectedOptions[0].textContent;
+                    const hostelText = document.getElementById('specificHostel').selectedOptions[0].textContent;
+                    assignmentInfo = `Assignment: ${hostelText} - ${floorText}`;
+                } else if (specificHostel) {
+                    const hostelText = document.getElementById('specificHostel').selectedOptions[0].textContent;
+                    assignmentInfo = `Assignment: ${hostelText}`;
+                } else if (hostelType) {
+                    assignmentInfo = `Assignment: ${hostelType === 'girls' ? 'Girls Hostel' : 'Boys Hostel'}`;
+                } else {
+                    assignmentInfo = 'Assignment: Not selected';
+                }
+
+                alert(`✅ DC Information Updated!\nName: ${name}\nID: ${id}\nContact: ${contact}\n${assignmentInfo}`);
+            }
+
+            function openAttendance(type) {
+                const modal = document.getElementById('attendanceModal');
+                const title = document.getElementById('attendanceTitle');
+                const content = document.getElementById('attendanceContent');
+
+                switch (type) {
+                    case 'manual':
+                        title.textContent = '✍️ Manual Attendance';
+                        content.innerHTML = `
+        <div class="space-y-4">
+            <input type="text" placeholder="Student ID or Name"
+                class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60">
+            <div class="flex gap-2">
+                <button
+                    class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">Present</button>
+                <button
+                    class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">Absent</button>
+            </div>
+        </div>
+        `;
+                        break;
+                    case 'face':
+                        title.textContent = '👤 Face Recognition Attendance';
+                        content.innerHTML = `
+        <div class="text-center">
+            <div class="w-48 h-36 mx-auto bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                <span class="text-4xl">📹</span>
+            </div>
+            <p class="text-white/80 mb-4">Camera is ready for face recognition</p>
+            <button class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition-colors">Start
+                Recognition</button>
+        </div>
+        `;
+                        break;
+                    case 'qr':
+                        title.textContent = '📱 QR Code Attendance';
+                        content.innerHTML = `
+        <div class="text-center">
+            <div class="w-48 h-48 mx-auto bg-white rounded-lg flex items-center justify-center mb-4">
+                <div class="grid grid-cols-8 gap-1">
+                    ${Array(64).fill().map(() => `<div class="w-2 h-2 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'}">
+                    </div>`).join('')}
+                </div>
+            </div>
+            <p class="text-white/80 mb-4">Scan this QR code for attendance</p>
+            <button class="bg-purple-500 text-white py-2 px-6 rounded-lg hover:bg-purple-600 transition-colors">Generate
+                New QR</button>
+        </div>
+        `;
+                        break;
+                }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function openComplaints() {
+                const modal = document.getElementById('complaintsModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function openIronBorrow() {
+                const modal = document.getElementById('ironModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            // Simulate real-time updates
+            setInterval(() => {
+                const presentCount = document.getElementById('presentToday');
+                const currentCount = parseInt(presentCount.textContent);
+                if (Math.random() > 0.7) {
+                    presentCount.textContent = currentCount + (Math.random() > 0.5 ? 1 : -1);
+                }
+            }, 5000);
+
+            // Close modals when clicking outside
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('fixed')) {
+                    e.target.classList.add('hidden');
+                    e.target.classList.remove('flex');
+                }
+            });
+
+            // Initialize page
+            document.addEventListener('DOMContentLoaded', function () {
+                loadSavedProfilePic();
+            });
+
+            let totalIrons = 33;
+            let borrowed = {}; // store as { ironId: {name, room} }
+            let available = totalIrons;
+
+            function renderIrons() {
+                const grid = document.getElementById("ironGrid");
+                grid.innerHTML = "";
+                for (let i = 1; i <= totalIrons; i++) {
+                    let btn = document.createElement("div");
+                    btn.textContent = i;
+                    btn.className =
+                        "text-center py-2 rounded-lg font-semibold cursor-pointer " +
+                        (borrowed[i] ? "bg-red-500" : "bg-green-500 hover:opacity-80");
+
+                    if (borrowed[i]) {
+                        btn.onclick = () => returnIron(i);
+                    } else {
+                        btn.onclick = () => openBorrowForm(i);
+                    }
+
+                    grid.appendChild(btn);
+                }
+                document.getElementById("ironCount").textContent = `${available}/${totalIrons}`;
+                document.getElementById("ironAvailable").textContent = available;
+
+                renderBorrowings();
+            }
+
+            function renderBorrowings() {
+                const list = document.getElementById("recentBorrowings");
+                list.innerHTML = "";
+                for (let ironId in borrowed) {
+                    let li = document.createElement("li");
+                    li.textContent = `Iron #${ironId} - ${borrowed[ironId].name} (Room ${borrowed[ironId].room})`;
+                    list.appendChild(li);
+                }
+            }
+
+            // open borrow form
+            function openBorrowForm(ironId) {
+                document.getElementById("selectedIronId").value = ironId;
+                document.getElementById("borrowFormModal").classList.remove("hidden");
+            }
+
+            function closeBorrowForm() {
+                document.getElementById("borrowFormModal").classList.add("hidden");
+                document.getElementById("borrowForm").reset();
+            }
+
+            // handle form submit
+            document.getElementById("borrowForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                let ironId = parseInt(document.getElementById("selectedIronId").value);
+                let name = document.getElementById("studentName").value;
+                let room = document.getElementById("roomNumber").value;
+
+                borrowed[ironId] = { name, room };
+                available--;
+
+                closeBorrowForm();
+                renderIrons();
+            });
+
+            // return iron (removes from logs)
+            function returnIron(ironId) {
+                if (confirm(`Return Iron #${ironId}?`)) {
+                    delete borrowed[ironId];
+                    available++;
+                    renderIrons();
+                }
+            }
+
+            function openIronBorrow() {
+                renderIrons();
+                const modal = document.getElementById("ironModal");
+                modal.classList.remove("hidden");
+                modal.classList.add("flex"); // ⬅️ this makes it centered
+            }
+
+            function closeIronBorrow() {
+                const modal = document.getElementById("ironModal");
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+
+
+            renderIrons();
+
+
+            // Dummy student list
+            let rawStudents = [
+                "Rahul Sharma", "Priya Verma", "Amit Kumar", "Neha Singh", "Deepak Yadav",
+                "Karan Mehta", "Pooja Rani", "Vikas Gupta", "Anjali Mishra", "Sandeep Rawat",
+                "Ritika Chauhan", "Manish Tiwari", "Sneha Agarwal", "Mohit Bansal", "Shreya Kapoor",
+                "Abhishek Dubey", "Kavita Nair", "Vivek Rathi", "Simran Gill", "Arjun Rana",
+                "Megha Saxena", "Rohit Malhotra", "Divya Patel", "Gaurav Singh", "Swati Jain",
+                "Harsh Vardhan", "Isha Sharma", "Yuvraj Thakur", "Nisha Yadav", "Rajeev Menon",
+                "Alok Saxena", "Rekha Choudhary", "Kunal Arora", "Sunita Kumari", "Ajay Mishra",
+                "Monika Batra", "Ashish Pandey", "Nidhi Sharma", "Tarun Sethi", "Renu Kumari",
+                "Varun Joshi", "Payal Aggarwal", "Devendra Chauhan", "Shalini Gupta", "Akash Yadav",
+                "Pallavi Saxena", "Naveen Malhotra", "Komal Rathi", "Santosh Meena", "Roshni Chouhan",
+                "Parveen Saini", "Anita Kumari", "Suraj Patil", "Kritika Jaiswal", "Vipin Kaushik",
+                "Snehal Deshmukh", "Aditya Singh", "Bhavna Sinha", "Shivam Gupta", "Mansi Agarwal",
+                "Rajat Kapoor", "Poonam Sharma", "Hemant Mehta", "Kirti Chauhan", "Saurabh Bansal",
+                "Jyoti Kumari", "Chetan Verma", "Aarti Sharma", "Prashant Yadav", "Radhika Nair",
+                "Rakesh Singh", "Tanvi Chauhan", "Lokesh Gupta", "Shruti Sharma", "Manoj Kumar"
+            ];
+
+            let students = rawStudents.map((name, index) => {
+                let fNumber = Math.floor(index / 2) + 1; // every 2 students share same F
+                return { id: index + 1, name: `F-${fNumber} ${name}` };
+            });
+
+            console.log(students);
+
+
+
+            function openAttendance() {
+                const modal = document.getElementById('attendanceModal');
+                const form = document.getElementById('attendanceForm');
+                form.innerHTML = "";
+
+                students.forEach(stu => {
+                    let row = document.createElement("div");
+                    row.className = "flex items-center justify-between bg-gray-100 p-2 rounded";
+                    row.innerHTML = `
+      <span class="w-1/2">${stu.name}</span>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-1">
+          <input type="radio" name="student-${stu.id}" value="present" class="statusRadio">
+          Present
+        </label>
+        <label class="flex items-center gap-1">
+          <input type="radio" name="student-${stu.id}" value="absent" class="statusRadio">
+          Absent
+        </label>
+      </div>
+    `;
+                    form.appendChild(row);
+                });
+
+                // Attach listeners after rendering
+                document.querySelectorAll(".statusRadio").forEach(radio => {
+                    radio.addEventListener("change", updatePresentCount);
+                });
+
+                updatePresentCount();
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+            }
+
+            function updatePresentCount() {
+                let present = 0;
+                students.forEach(stu => {
+                    let selected = document.querySelector(`input[name="student-${stu.id}"]:checked`);
+                    if (selected && selected.value === "present") present++;
+                });
+                document.getElementById("presentCount").textContent = present;
+            }
+
+            function submitAttendance() {
+                let result = [];
+                students.forEach(stu => {
+                    let selected = document.querySelector(`input[name="student-${stu.id}"]:checked`);
+                    result.push({ id: stu.id, name: stu.name, status: selected ? selected.value : "absent" });
+                });
+                console.log("Final Attendance:", result);
+                alert("Attendance saved successfully!");
+                closeModal('attendanceModal');
+            }
+
+
+            function submitAttendance() {
+                let result = [];
+                students.forEach(stu => {
+                    let selected = document.querySelector(`input[name="student-${stu.id}"]:checked`);
+                    result.push({
+                        ID: stu.id,
+                        Name: stu.name,
+                        Status: selected ? selected.value : "Not Marked"
+                    });
+                });
+
+                // ✅ Export to Excel
+                let ws = XLSX.utils.json_to_sheet(result);
+                let wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+
+                XLSX.writeFile(wb, "Attendance_Report.xlsx");
+
+                alert("Attendance saved & exported as Excel!");
+                closeModal('attendanceModal');
+            }
+
+            // // Check if user is logged in
+            // if (!localStorage.getItem("loggedInUser")) {
+            //     // not logged in, redirect to login
+            //     window.location.href = "hams_first.html";
+            // }
+
+            // timer to logout (milliseconds में)
+            const INACTIVITY_LIMIT = 1 * 60 * 1000; // 5 minutes
+
+            let inactivityTimer;
+
+            // logout function
+            function logout() {
+                localStorage.removeItem("loggedInUser"); // session removed
+                alert("Session expired due to inactivity.");
+                window.location.href = "hams_first.html"; // login page  redirect
+            }
+
+            // reset inactivity timer
+            function resetTimer() {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = setTimeout(logout, INACTIVITY_LIMIT);
+            }
+
+            // जब भी user कुछ activity करे तो reset हो जाए
+            window.onload = resetTimer;
+            document.onmousemove = resetTimer;
+            document.onkeydown = resetTimer;
+            document.onclick = resetTimer;
+            document.onscroll = resetTimer;
+
+
+
+        </script>
+        <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'97594d66e3aed854',t:'MTc1NjI3Mzk0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Background */
+body {
+    background: url("outside_image.jpg") no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Navbar */
+.navbar {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 60, 180, 1.8);
+    padding: 10px 20px;
+    color: white;
+    height: 70px;
+}
+
+.navbar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.navbar h1 {
+    font-size: 20px;
+}
+
+.navbar p {
+    font-size: 12px;
+    color: #ddd;
+}
+
+/* Main container */
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Roles */
+.roles {
+    margin-left: -283px;
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+
+    height: 77px;
+    width: 125px;
+}
+
+#roles {
+    padding-left: 51px;
+    padding-right: 52px;
+}
+
+.role {
+    padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.role:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.role.selected {
+    border: 2px solid #4a90e2;
+
+}
+
+/* Login Box */
+.login-box {
+    width: 348px;
+    height: 291px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    PADDING-TOP: 33PX;
+    GAP: 4PX;
+}
+
+.login-box label {
+    font-size: 14px;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.login-box input {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    OPACITY: 0.6;
+}
+
+.login-box button {
+    background: linear-gradient(to right, #007bff, #9b59b6);
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 10px;
+    transition: 0.3s;
+}
+
+.login-box button:hover {
+    opacity: 0.85;
+}
+
+.forgot {
+    text-align: center;
+    font-size: 13px;
+   
+    text-decoration: none;
+}
+
+.forgot:hover {
+    text-decoration: underline;
+}
+
+#loginBtn {
+    width: 179px;
+    height: 29px;
+    color: white;
+    background-color: #007bff;
+    text-decoration: none;
+    margin-left: 66px;
+    margin-bottom: 7px;
+    padding: 6px;
+    padding-left: 16px;
+    border-radius: 5px;
+    margin-top: 4px;
+    text-align: center;
+    font-weight: 500;
+
+}
+
+#password{
+   width: 309px;
+}
+
+#togglePassword{
+    margin-bottom: 5px;
+}
+
+.create_accound{
+    text-decoration: none;
+}
+
+.create_accound:hover {
+    text-decoration: underline;
+}
+
+.createacc{
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+}
